@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "principalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "runningOnGitHub": {
+      "value": "${GITHUB_ACTIONS}"
+    },
+    "azureOpenaiChatModel": {
+      "value": "${AZURE_OPENAI_CHAT_MODEL}"
+    },
+    "azureOpenaiChatModelVersion": {
+      "value": "${AZURE_OPENAI_CHAT_MODEL_VERSION}"
+    },
+    "azureOpenaiChatDeployment": {
+      "value": "${AZURE_OPENAI_CHAT_DEPLOYMENT}"
+    },
+    "azureOpenaiChatDeploymentCapacity": {
+      "value": "${AZURE_OPENAI_CHAT_DEPLOYMENT_CAPACITY}"
+    }
+  }
+}

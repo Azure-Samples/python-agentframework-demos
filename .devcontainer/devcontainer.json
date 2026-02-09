@@ -1,0 +1,25 @@
+{
+    "name": "python-agentframework-demos",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "features": {
+        "ghcr.io/azure/azure-dev/azd:latest": {}
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "remote.autoForwardPorts": false,
+                "python.createEnvironment.trigger": "off",
+                "python.analysis.typeCheckingMode": "off"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-bicep"
+            ]
+        }
+    },
+    "remoteUser": "vscode"
+}
