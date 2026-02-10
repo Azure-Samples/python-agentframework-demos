@@ -6,7 +6,7 @@ import openai
 from dotenv import load_dotenv
 from rich import print
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -75,7 +75,7 @@ response = client.chat.completions.create(
 
 print(f"Respuesta de {MODEL_NAME} en {API_HOST}: \n")
 
-# Ahora ejecutar la función según lo indicado
+# Ahora ejecuta la función según lo indicado
 if response.choices[0].message.tool_calls:
     tool_call = response.choices[0].message.tool_calls[0]
     function_name = tool_call.function.name

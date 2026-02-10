@@ -27,10 +27,12 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
-# Definir salida estructurada para resultados de revisión
+# Define la salida estructurada para los resultados de revisión
 class ResultadoRevision(BaseModel):
     """Evaluación de revisión con puntajes y retroalimentación."""
 
@@ -42,9 +44,9 @@ class ResultadoRevision(BaseModel):
     estructura: int  # Puntaje de estructura (0-100)
 
 
-# Función de condición: enviar al editor si puntaje < 80
+# Función de condición: envía al editor si puntaje < 80
 def necesita_edicion(message: Any) -> bool:
-    """Verificar si el contenido necesita edición basándose en el puntaje de revisión."""
+    """Verifica si el contenido necesita edición según el puntaje de revisión."""
     if not isinstance(message, AgentExecutorResponse):
         return False
     try:
@@ -56,7 +58,7 @@ def necesita_edicion(message: Any) -> bool:
 
 # Función de condición: el contenido está aprobado (puntaje >= 80)
 def esta_aprobado(message: Any) -> bool:
-    """Verificar si el contenido está aprobado (alta calidad)."""
+    """Verifica si el contenido está aprobado (alta calidad)."""
     if not isinstance(message, AgentExecutorResponse):
         return True
     try:
@@ -66,7 +68,7 @@ def esta_aprobado(message: Any) -> bool:
         return True
 
 
-# Crear agente Escritor - genera contenido
+# Crea el agente Escritor: genera contenido
 def crear_escritor():
     return ChatAgent(
         chat_client=client,
@@ -79,7 +81,7 @@ def crear_escritor():
     )
 
 
-# Crear agente Revisor - evalúa y proporciona retroalimentación estructurada
+# Crea el agente Revisor: evalúa y da retroalimentación estructurada
 def crear_revisor():
     return ChatAgent(
         chat_client=client,
@@ -100,7 +102,7 @@ def crear_revisor():
     )
 
 
-# Crear agente Editor - mejora el contenido basándose en la retroalimentación
+# Crea el agente Editor: mejora el contenido según la retroalimentación
 def crear_editor():
     return ChatAgent(
         chat_client=client,
@@ -114,7 +116,7 @@ def crear_editor():
     )
 
 
-# Crear agente Publicador - formatea el contenido para publicación
+# Crea el agente Publicador: formatea el contenido para publicación
 def crear_publicador():
     return ChatAgent(
         chat_client=client,
@@ -127,7 +129,7 @@ def crear_publicador():
     )
 
 
-# Crear agente Resumidor - crea el informe final de publicación
+# Crea el agente Resumidor: arma el informe final de publicación
 def crear_resumidor():
     return ChatAgent(
         chat_client=client,
@@ -143,7 +145,7 @@ def crear_resumidor():
     )
 
 
-# Construir flujo de trabajo con ramificación y convergencia:
+# Construye el workflow con ramificación y convergencia:
 # Escritor → Revisor → [ramas]:
 #   - Si puntaje >= 80: → Publicador → Resumidor (ruta de aprobación directa)
 #   - Si puntaje < 80: → Editor → Publicador → Resumidor (ruta de mejora)

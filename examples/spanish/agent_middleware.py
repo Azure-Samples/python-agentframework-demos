@@ -65,13 +65,13 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Configurar el registro
+# Configura logging
 handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
 logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -109,7 +109,7 @@ def get_weather(
 
 
 def get_current_date() -> str:
-    """Obtiene la fecha actual del sistema y la devuelve como cadena en formato AAAA-MM-DD."""
+    """Obtiene la fecha actual del sistema y la devuelve como texto en formato AAAA-MM-DD."""
     logger.info("Obteniendo fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 
@@ -136,7 +136,9 @@ async def logging_function_middleware(
     next: Callable[[FunctionInvocationContext], Awaitable[None]],
 ) -> None:
     """Middleware de función que registra las llamadas y resultados de funciones."""
-    logger.info(f"[🪵 Registro][ Middleware de Función] Llamando a {context.function.name} con args: {context.arguments}")
+    logger.info(
+        f"[🪵 Registro][ Middleware de Función] Llamando a {context.function.name} con args: {context.arguments}"
+    )
 
     await next(context)
 
@@ -178,7 +180,11 @@ class BlockingAgentMiddleware(AgentMiddleware):
                     logger.warning(f"[❌ Bloqueo][ Middleware de Agente] Solicitud bloqueada: contiene '{word}'")
                     context.terminate = True
                     context.result = AgentRunResponse(
-                        messages=[ChatMessage(role=Role.ASSISTANT, text=f"Lo siento, no puedo procesar solicitudes sobre '{word}'.")]
+                        messages=[
+                            ChatMessage(
+                                role=Role.ASSISTANT, text=f"Lo siento, no puedo procesar solicitudes sobre '{word}'."
+                            )
+                        ]
                     )
                     return
 
@@ -217,7 +223,11 @@ class MessageCountChatMiddleware(ChatMiddleware):
     ) -> None:
         """Cuenta los mensajes y registra el total acumulado."""
         self.total_messages += len(context.messages)
-        logger.info(f"[🔢 Conteo][ Middleware de Chat] Mensajes en esta solicitud: {len(context.messages)}, total hasta ahora: {self.total_messages}")
+        logger.info(
+            "[🔢 Conteo][ Middleware de Chat] Mensajes en esta solicitud: %s, total hasta ahora: %s",
+            len(context.messages),
+            self.total_messages,
+        )
 
         await next(context)
 
@@ -234,7 +244,11 @@ message_count_middleware = MessageCountChatMiddleware()
 agent = ChatAgent(
     name="middleware-demo",
     chat_client=client,
-    instructions="Ayudas a los usuarios a planificar sus fines de semana. Usa las herramientas disponibles para consultar el clima y la fecha. Responde en español.",
+    instructions=(
+        "Ayudas a la gente a planificar su fin de semana. "
+        "Usa las herramientas disponibles para consultar el clima y la fecha. "
+        "Responde en español."
+    ),
     tools=[get_weather, get_current_date],
     middleware=[
         # Middleware a nivel de agente aplicado a TODAS las ejecuciones

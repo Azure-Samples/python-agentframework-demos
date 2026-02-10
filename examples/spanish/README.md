@@ -34,7 +34,7 @@ Este repositorio ofrece ejemplos de [Microsoft Agent Framework](https://learn.mi
 ## Cómo empezar
 
 Tienes varias opciones para comenzar con este repositorio.
-La forma más rápida es usar GitHub Codespaces, ya que te configurará todo automáticamente, pero también puedes [configurarlo localmente](#entorno-local).
+La forma más rápida es usar GitHub Codespaces, ya que te deja todo listo automáticamente, pero también puedes [configurarlo localmente](#entorno-local).
 
 ### GitHub Codespaces
 

@@ -178,7 +178,9 @@ class BlockingAgentMiddleware(AgentMiddleware):
                     logger.warning(f"[❌ Blocking][ Agent Middleware] Request blocked: contains '{word}'")
                     context.terminate = True
                     context.result = AgentRunResponse(
-                        messages=[ChatMessage(role=Role.ASSISTANT, text=f"Sorry, I can't process requests about '{word}'.")]
+                        messages=[
+                            ChatMessage(role=Role.ASSISTANT, text=f"Sorry, I can't process requests about '{word}'.")
+                        ]
                     )
                     return
 
@@ -217,7 +219,11 @@ class MessageCountChatMiddleware(ChatMiddleware):
     ) -> None:
         """Count messages and log the running total."""
         self.total_messages += len(context.messages)
-        logger.info(f"[🔢 Message Count][ Chat Middleware] Messages in this request: {len(context.messages)}, total so far: {self.total_messages}")
+        logger.info(
+            "[🔢 Message Count][ Chat Middleware] Messages in this request: %s, total so far: %s",
+            len(context.messages),
+            self.total_messages,
+        )
 
         await next(context)
 

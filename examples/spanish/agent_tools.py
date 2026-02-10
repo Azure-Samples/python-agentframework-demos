@@ -14,13 +14,13 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Setup logging
+# Configura logging
 handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
 logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -40,11 +40,13 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
 def get_weather(
-    city: Annotated[str, Field(description="La ciudad para obtener el clima.")],
+    city: Annotated[str, Field(description="La ciudad para consultar el clima.")],
 ) -> dict:
     """Devuelve datos meteorológicos para una ciudad: temperatura y descripción."""
     logger.info(f"Obteniendo el clima para {city}")
@@ -61,8 +63,8 @@ def get_weather(
 
 
 def get_activities(
-    city: Annotated[str, Field(description="La ciudad para obtener actividades.")],
-    date: Annotated[str, Field(description="La fecha (YYYY-MM-DD) para obtener actividades.")],
+    city: Annotated[str, Field(description="La ciudad para consultar actividades.")],
+    date: Annotated[str, Field(description="La fecha (YYYY-MM-DD) para consultar actividades.")],
 ) -> list[dict]:
     """Devuelve una lista de actividades para una ciudad y fecha dadas."""
     logger.info(f"Obteniendo actividades para {city} en {date}")
@@ -83,7 +85,7 @@ agent = ChatAgent(
     name="weekend-planner",
     chat_client=client,
     instructions=(
-        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
+        "Ayudas a la gente a planear su fin de semana y elegir las mejores actividades según el clima. "
         "Si una actividad sería desagradable con el clima previsto, no la sugieras. "
         "Incluye la fecha del fin de semana en tu respuesta."
     ),

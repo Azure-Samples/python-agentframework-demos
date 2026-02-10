@@ -1,7 +1,7 @@
 """
 Servidor MCP de ejemplo para seguimiento de gastos.
 
-Ejecuta este servidor primero, luego usa agent_mcp_local.py para conectarse:
+Ejecuta este servidor primero y luego usa agent_mcp_local.py para conectarte:
     python examples/spanish/mcp_server.py
     python examples/spanish/agent_mcp_local.py
 """
@@ -26,7 +26,7 @@ mcp = FastMCP("Rastreador de Gastos")
 
 
 class MetodoPago(Enum):
-    """Métodos de pago aceptados para gastos."""
+    """Métodos de pago que puedes usar para gastos."""
 
     AMEX = "amex"
     VISA = "visa"
@@ -34,7 +34,7 @@ class MetodoPago(Enum):
 
 
 class Categoria(Enum):
-    """Categorías de gastos para clasificación."""
+    """Categorías de gastos para clasificar."""
 
     COMIDA = "comida"
     TRANSPORTE = "transporte"
@@ -77,7 +77,7 @@ async def agregar_gasto(
 
 @mcp.resource("resource://expenses")
 async def obtener_datos_gastos() -> str:
-    """Obtiene los datos de gastos del archivo CSV."""
+    """Obtiene los datos de gastos desde el archivo CSV."""
     logger.info("Datos de gastos consultados")
 
     try:

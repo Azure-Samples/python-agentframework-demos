@@ -50,7 +50,9 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 """
 Ejemplo: agentes con herramientas y retroalimentación humana
@@ -70,7 +72,7 @@ Demuestra:
 
 Requisitos previos:
 - Azure OpenAI configurado para AzureOpenAIChatClient con las variables de entorno requeridas.
-- Autenticación vía azure-identity. Ejecutá `az login` antes de ejecutar.
+- Autenticación vía azure-identity. Ejecuta `az login` antes de ejecutar.
 """
 
 
@@ -151,9 +153,9 @@ class Coordinador(Executor):
             texto_borrador = "No se produjo ninguna versión preliminar."
 
         indicacion = (
-            "Revisá la versión preliminar del escritor y compartí una nota direccional breve "
+            "Revisa la versión preliminar del escritor y comparte una nota direccional breve "
             "(ajustes de tono, detalles imprescindibles, público objetivo, etc.). "
-            "Mantené la nota en menos de 30 palabras."
+            "Mantén la nota en menos de 30 palabras."
         )
         await ctx.request_info(
             request_data=SolicitudRetroalimentacionBorrador(
@@ -187,12 +189,13 @@ class Coordinador(Executor):
         instruccion = (
             "Un revisor humano compartió la siguiente guía:\n"
             f"{nota or 'No se proporcionó guía específica.'}\n\n"
-            "Reescribí la versión preliminar del mensaje anterior del asistente en una versión final pulida. "
-            "Mantené la respuesta en menos de 120 palabras y reflejá los ajustes de tono solicitados."
+            "Reescribe la versión preliminar del mensaje anterior del asistente en una versión final pulida. "
+            "Mantén la respuesta en menos de 120 palabras y refleja los ajustes de tono solicitados."
         )
         conversacion.append(ChatMessage(Role.USER, text=instruccion))
         await ctx.send_message(
-            AgentExecutorRequest(messages=conversacion, should_respond=True), target_id=self.id_escritor
+            AgentExecutorRequest(messages=conversacion, should_respond=True),
+            target_id=self.id_escritor,
         )
 
 
@@ -202,9 +205,12 @@ def crear_agente_escritor() -> ChatAgent:
         chat_client=client,
         name="agente_escritor",
         instructions=(
-            "Sos un escritor de marketing. Llamá a las herramientas disponibles antes de escribir una versión preliminar para ser preciso. "
-            "Siempre llamá a ambas herramientas una vez antes de escribir una versión preliminar. Resumí las salidas de las herramientas "
-            "como viñetas, luego producí una versión preliminar de 3 oraciones."
+            "Eres un escritor de marketing. "
+            "Llama a las herramientas disponibles antes de escribir una versión preliminar "
+            "para ser preciso. "
+            "Siempre llama a ambas herramientas una vez antes de escribir una versión preliminar. "
+            "Resume las salidas de las herramientas como viñetas y luego produce una versión preliminar "
+            "de 3 oraciones."
         ),
         tools=[obtener_resumen_producto, obtener_perfil_voz_marca],
         tool_choice="required",
@@ -217,8 +223,8 @@ def crear_agente_editor_final() -> ChatAgent:
         chat_client=client,
         name="agente_editor_final",
         instructions=(
-            "Sos un editor que pule el texto de marketing después de la aprobación humana. "
-            "Corregí cualquier problema legal o fáctico. Devolvé la versión final aunque no se necesiten cambios."
+            "Eres un editor que pule el texto de marketing después de la aprobación humana. "
+            "Corrige cualquier problema legal o fáctico. Devuelve la versión final aunque no se necesiten cambios."
         ),
     )
 
@@ -296,7 +302,7 @@ async def main() -> None:
     mostrar_actualizaciones = False
 
     print(
-        "Modo interactivo. Cuando se te solicite, proporcioná una nota de retroalimentación breve para el editor.",
+        "Modo interactivo. Cuando se te solicite, proporciona una nota de retroalimentación breve para el editor.",
         flush=True,
     )
 
@@ -308,8 +314,8 @@ async def main() -> None:
         ultimo_ejecutor: str | None = None
         if ejecucion_inicial:
             stream = flujo_trabajo.run_stream(
-                "Creá un breve texto de lanzamiento para la lámpara de escritorio LumenX. "
-                "Enfatizá la ajustabilidad y la iluminación cálida."
+                "Crea un breve texto de lanzamiento para la lámpara de escritorio LumenX. "
+                "Enfatiza la ajustabilidad y la iluminación cálida."
             )
             ejecucion_inicial = False
         elif respuestas_pendientes is not None:
@@ -340,7 +346,7 @@ async def main() -> None:
             for id_solicitud, solicitud in solicitudes:
                 print("\n----- Versión preliminar del escritor -----")
                 print(solicitud.texto_borrador.strip())
-                print("\nProporcioná guía para el editor (o 'aprobar' para aceptar la versión preliminar).")
+                print("\nProporciona guía para el editor (o 'aprobar' para aceptar la versión preliminar).")
                 respuesta_usuario = input("Retroalimentación humana: ").strip()  # noqa: ASYNC250
                 if respuesta_usuario.lower() == "salir":
                     print("Saliendo...")
