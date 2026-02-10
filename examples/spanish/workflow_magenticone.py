@@ -1,4 +1,4 @@
-"""MagenticOne example with Agent Framework - Multi-agent travel planning."""
+"""Ejemplo de MagenticOne con Agent Framework - Planificación de viaje con múltiples agentes."""
 import asyncio
 import os
 import sys

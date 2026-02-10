@@ -33,7 +33,7 @@ else:
 
 # Define la salida estructurada para los resultados de revisión
 class ReviewResult(BaseModel):
-    """Review evaluation with scores and feedback."""
+    """Evaluación de revisión con puntajes y retroalimentación."""
 
     score: int  # Puntaje general de calidad (0-100)
     feedback: str  # Retroalimentación concisa y accionable
@@ -45,7 +45,7 @@ class ReviewResult(BaseModel):
 
 # Función de condición: envía al editor si puntaje < 80
 def needs_editing(message: Any) -> bool:
-    """Check if the content needs editing based on the review score."""
+    """Verifica si el contenido necesita edición según el puntaje de revisión."""
     if not isinstance(message, AgentExecutorResponse):
         return False
     try:
@@ -57,7 +57,7 @@ def needs_editing(message: Any) -> bool:
 
 # Función de condición: el contenido está aprobado (puntaje >= 80)
 def is_approved(message: Any) -> bool:
-    """Check if the content is approved (high quality)."""
+    """Verifica si el contenido está aprobado (alta calidad)."""
     if not isinstance(message, AgentExecutorResponse):
         return True
     try:

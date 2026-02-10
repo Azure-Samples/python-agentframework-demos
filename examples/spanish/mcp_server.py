@@ -1,7 +1,7 @@
 """
-Example MCP server for expense tracking.
+Servidor MCP de ejemplo para seguimiento de gastos.
 
-Run this server first and then use agent_mcp_local.py to connect:
+Ejecuta este servidor primero y luego usa agent_mcp_local.py para conectarte:
     python examples/spanish/mcp_server.py
     python examples/spanish/agent_mcp_local.py
 """
@@ -26,7 +26,7 @@ mcp = FastMCP("Expenses Tracker")
 
 
 class PaymentMethod(Enum):
-    """Accepted payment methods for expenses."""
+    """Métodos de pago aceptados para gastos."""
 
     AMEX = "amex"
     VISA = "visa"
@@ -34,7 +34,7 @@ class PaymentMethod(Enum):
 
 
 class Category(Enum):
-    """Expense categories for classification."""
+    """Categorías de gastos para clasificación."""
 
     FOOD = "comida"
     TRANSPORT = "transporte"
@@ -52,7 +52,7 @@ async def add_expense(
     description: Annotated[str, "Human-readable expense description"],
     payment_method: Annotated[PaymentMethod, "Payment method used"],
 ) -> str:
-    """Add a new expense to the expenses.csv file."""
+    """Agrega un nuevo gasto al archivo expenses.csv."""
     if amount <= 0:
         return "Error: El monto debe ser positivo"
 
@@ -77,7 +77,7 @@ async def add_expense(
 
 @mcp.resource("resource://expenses")
 async def get_expenses_data() -> str:
-    """Get expense data from the CSV file."""
+    """Obtiene los datos de gastos desde el archivo CSV."""
     logger.info("Datos de gastos consultados")
 
     try:

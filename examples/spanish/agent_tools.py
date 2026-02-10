@@ -48,7 +48,7 @@ else:
 def get_weather(
     city: Annotated[str, Field(description="City to fetch the weather for.")],
 ) -> dict:
-    """Return weather data for a city: temperature and description."""
+    """Devuelve datos meteorológicos para una ciudad: temperatura y descripción."""
     logger.info(f"Obteniendo el clima para {city}")
     if random.random() < 0.05:
         return {
@@ -66,7 +66,7 @@ def get_activities(
     city: Annotated[str, Field(description="City to fetch activities for.")],
     date: Annotated[str, Field(description="Date (YYYY-MM-DD) to fetch activities for.")],
 ) -> list[dict]:
-    """Return a list of activities for a given city and date."""
+    """Devuelve una lista de actividades para una ciudad y fecha dadas."""
     logger.info(f"Obteniendo actividades para {city} en {date}")
     return [
         {"name": "Senderismo", "location": city},
@@ -76,7 +76,7 @@ def get_activities(
 
 
 def get_current_date() -> str:
-    """Get the current system date in YYYY-MM-DD format."""
+    """Obtiene la fecha actual del sistema en formato YYYY-MM-DD."""
     logger.info("Obteniendo la fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 

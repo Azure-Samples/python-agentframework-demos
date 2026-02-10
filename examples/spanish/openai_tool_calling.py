@@ -28,7 +28,7 @@ else:
 
 
 def lookup_weather(city_name: str | None = None, zip_code: str | None = None) -> dict:
-    """Look up weather for a given city name or zip code."""
+    """Consulta el clima para un nombre de ciudad o código postal dado."""
     return {
         "city_name": city_name,
         "zip_code": zip_code,

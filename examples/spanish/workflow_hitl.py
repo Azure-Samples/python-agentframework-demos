@@ -55,24 +55,24 @@ else:
     )
 
 """
-Example: agents with tools and human feedback
+Ejemplo: agentes con herramientas y retroalimentación humana
 
-Pipeline design:
-writer_agent (uses Azure OpenAI tools) -> Coordinator -> writer_agent
--> Coordinator -> final_editor_agent -> Coordinator -> output
+Diseño del pipeline:
+writer_agent (usa herramientas de Azure OpenAI) -> Coordinator -> writer_agent
+-> Coordinator -> final_editor_agent -> Coordinator -> salida
 
-The writer agent calls tools to gather product data before drafting.
-A custom executor packages the draft and emits a RequestInfoEvent so a human can comment;
-it then incorporates that guidance into the conversation before the final editor produces the polished output.
+El agente escritor llama a herramientas para reunir datos del producto antes de escribir una versión preliminar.
+Un ejecutor personalizado empaqueta la versión preliminar y emite un RequestInfoEvent para que un humano pueda comentar;
+luego incorpora esa guía en la conversación antes de que el editor final produzca la salida pulida.
 
-Demonstrates:
-- Attaching tools (Python functions) to an agent inside a workflow.
-- Capturing the writer output for human review.
-- Streaming AgentRunUpdateEvent updates alongside human-in-the-loop pauses.
+Demuestra:
+- Adjuntar herramientas (funciones Python) a un agente dentro de un workflow.
+- Capturar la salida del escritor para revisión humana.
+- Transmitir actualizaciones de AgentRunUpdateEvent junto con pausas con intervención humana.
 
-Prerequisites:
-- Azure OpenAI configured for AzureOpenAIChatClient with required environment variables.
-- Authentication via azure-identity. Run `az login` before running.
+Requisitos previos:
+- Azure OpenAI configurado para AzureOpenAIChatClient con las variables de entorno requeridas.
+- Autenticación vía azure-identity. Ejecuta `az login` antes de ejecutar.
 """
 
 
@@ -81,7 +81,7 @@ Prerequisites:
 def fetch_product_brief(
     product_name: Annotated[str, Field(description="Product name to look up.")],
 ) -> str:
-    """Return a marketing brief for a product."""
+    """Devuelve un resumen de marketing para un producto."""
     briefs = {
         "lumenx desk lamp": (
             "Producto: Lámpara de Escritorio LumenX\n"
@@ -106,7 +106,7 @@ def fetch_product_brief(
 def get_brand_voice_profile(
     voice_name: Annotated[str, Field(description="Brand or campaign voice to emulate.")],
 ) -> str:
-    """Return guidelines for the requested brand voice."""
+    """Devuelve las directrices para la voz de marca solicitada."""
     voices = {
         "lumenx launch": (
             "Directrices de voz:\n"
@@ -126,7 +126,7 @@ def get_brand_voice_profile(
 
 @dataclass
 class DraftFeedbackRequest:
-    """Payload sent for human review."""
+    """Carga útil enviada para revisión humana."""
 
     prompt: str = ""
     draft_text: str = ""
@@ -134,7 +134,7 @@ class DraftFeedbackRequest:
 
 
 class Coordinator(Executor):
-    """Bridge between the writer agent, human feedback, and the final editor."""
+    """Puente entre el agente escritor, la retroalimentación humana y el editor final."""
 
     def __init__(self, id: str, writer_id: str, final_editor_id: str) -> None:
         super().__init__(id)
@@ -147,7 +147,7 @@ class Coordinator(Executor):
         draft: AgentExecutorResponse,
         ctx: WorkflowContext[Never, AgentResponse],
     ) -> None:
-        """Handle responses from the other two agents in the workflow."""
+        """Maneja las respuestas de los otros dos agentes en el workflow."""
         if draft.executor_id == self.final_editor_id:
             # Respuesta del editor final; emitir salida directamente.
             await ctx.yield_output(draft.agent_response)
@@ -210,7 +210,7 @@ class Coordinator(Executor):
 
 
 def create_writer_agent() -> ChatAgent:
-    """Create a writer agent with tools."""
+    """Crea un agente escritor con herramientas."""
     return ChatAgent(
         chat_client=client,
         name="writer_agent",
@@ -228,7 +228,7 @@ def create_writer_agent() -> ChatAgent:
 
 
 def create_final_editor_agent() -> ChatAgent:
-    """Create a final editor agent."""
+    """Crea un agente editor final."""
     return ChatAgent(
         chat_client=client,
         name="final_editor_agent",
@@ -240,7 +240,7 @@ def create_final_editor_agent() -> ChatAgent:
 
 
 def display_agent_run_update(event: AgentRunUpdateEvent, last_executor: str | None) -> None:
-    """Display an AgentRunUpdateEvent in a readable format."""
+    """Muestra un AgentRunUpdateEvent en un formato legible."""
     printed_tool_calls: set[str] = set()
     printed_tool_results: set[str] = set()
     executor_id = event.executor_id
@@ -284,7 +284,7 @@ def display_agent_run_update(event: AgentRunUpdateEvent, last_executor: str | No
 
 
 async def main() -> None:
-    """Run the workflow and connect human feedback between two agents."""
+    """Ejecuta el workflow y conecta la retroalimentación humana entre dos agentes."""
 
     # Construir el workflow.
     workflow = (
