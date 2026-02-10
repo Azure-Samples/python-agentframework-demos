@@ -1,6 +1,4 @@
-"""
-Ejemplo de MagenticOne con Agent Framework - Planificación de viaje con múltiples agentes
-"""
+"""Ejemplo de MagenticOne con Agent Framework - Planificación de viaje con múltiples agentes."""
 import asyncio
 import os
 import sys
@@ -43,18 +41,20 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
-# Inicializar la consola rich
+# Inicializa la consola rich
 console = Console()
 
 # Crea los agentes
 agente_local = ChatAgent(
     chat_client=client,
     instructions=(
-        "Eres un asistente útil que puede sugerir actividades locales auténticas e interesantes "
-        "o lugares para visitar para un usuario y puede usar cualquier información de contexto proporcionada."
+        "Eres un asistente útil: puedes sugerir actividades locales auténticas e interesantes "
+        "o lugares para visitar, y puedes usar cualquier información de contexto que te compartan."
     ),
     name="agente_local",
     description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
@@ -63,9 +63,9 @@ agente_local = ChatAgent(
 agente_idioma = ChatAgent(
     chat_client=client,
     instructions=(
-        "Eres un asistente útil que puede revisar planes de viaje, brindando comentarios sobre consejos importantes "
-        "sobre cómo abordar mejor los desafíos de idioma o comunicación para el destino dado. "
-        "Si el plan ya incluye consejos de idioma, puedes mencionar que el plan es satisfactorio, con justificación."
+        "Eres un asistente útil: puedes revisar planes de viaje y dar feedback con tips importantes/críticos "
+        "para manejar mejor desafíos de idioma o comunicación en el destino. "
+        "Si el plan ya incluye tips de idioma, puedes decir que está bien y explicar por qué."
     ),
     name="agente_idioma",
     description="Un asistente útil que puede proporcionar consejos de idioma para un destino dado.",
@@ -74,24 +74,24 @@ agente_idioma = ChatAgent(
 agente_resumen_viaje = ChatAgent(
     chat_client=client,
     instructions=(
-        "Eres un asistente útil que puede tomar todas las sugerencias y consejos de los otros agentes "
-        "y proporcionar un plan de viaje final detallado. Debes asegurarte de que el plan esté integrado y completo. "
-        "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Proporciona un resumen completo cuando todas las perspectivas "
-        "de otros agentes se hayan integrado."
+        "Eres un asistente útil: puedes tomar todas las sugerencias y consejos de los otros agentes "
+        "y armar un plan de viaje final detallado. Asegúrate de que el plan quede integrado y completo. "
+        "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Da un resumen completo cuando ya integraste "
+        "todas las perspectivas de los otros agentes."
     ),
     name="agente_resumen_viaje",
     description="Un asistente útil que puede resumir el plan de viaje.",
 )
 
-# Crear un agente gerente para la orquestación
+# Crea un agente manager para la orquestación
 agente_gerente = ChatAgent(
     chat_client=client,
-    instructions="Coordinas un equipo para completar tareas de planificación de viajes de manera eficiente.",
+    instructions="Coordinas un equipo para completar tareas de planificación de viaje de forma eficiente.",
     name="agente_gerente",
     description="Orquestador que coordina el flujo de trabajo de planificación de viajes",
 )
 
-# Construir el flujo de trabajo de Magentic
+# Construye el workflow de Magentic
 orquestador_magentico = (
     MagenticBuilder()
     .participants([agente_local, agente_idioma, agente_resumen_viaje])
@@ -106,7 +106,7 @@ orquestador_magentico = (
 
 
 async def main():
-    # Mantener registro del último mensaje para formatear la salida en modo streaming
+    # Lleva registro del último mensaje para formatear la salida en modo streaming
     ultimo_id_mensaje: str | None = None
     evento_salida: WorkflowOutputEvent | None = None
 
@@ -121,7 +121,7 @@ async def main():
             console.print(event.data, end="")
 
         elif isinstance(event, MagenticOrchestratorEvent):
-            console.print()  # Asegurar que el panel comience en una nueva línea
+            console.print()  # Asegura que el panel empiece en una nueva línea
             if isinstance(event.data, ChatMessage):
                 # Mostrar la creación del plan en un panel
                 console.print(
@@ -141,7 +141,11 @@ async def main():
                 next_agent = ledger.next_speaker.answer
                 instruction = ledger.instruction_or_question.answer
 
-                status_text = f"¿Plan satisfecho? {satisfied} | ¿Hay progreso? {progress} {loop}\n\n➡️  Siguiente paso: [bold]{next_agent}[/bold]\n{instruction}"
+                status_text = (
+                    f"¿Plan satisfecho? {satisfied} | ¿Hay progreso? {progress} {loop}\n\n"
+                    f"➡️  Siguiente paso: [bold]{next_agent}[/bold]\n"
+                    f"{instruction}"
+                )
                 console.print(
                     Panel(
                         status_text,
@@ -156,7 +160,7 @@ async def main():
 
     if evento_salida:
         console.print()  # Agregar espacio
-        # La salida del flujo de trabajo Magentic es una lista de ChatMessages con solo un mensaje final
+        # La salida del workflow de Magentic es una lista de ChatMessages con un solo mensaje final
         mensajes_salida = cast(list[ChatMessage], evento_salida.data)
         if mensajes_salida:
             console.print(
@@ -176,6 +180,6 @@ if __name__ == "__main__":
     if "--devui" in sys.argv:
         from agent_framework.devui import serve
 
-        serve(entities=[magentic_orchestrator], auto_open=True)
+        serve(entities=[orquestador_magentico], auto_open=True)
     else:
         asyncio.run(main())

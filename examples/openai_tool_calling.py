@@ -84,6 +84,6 @@ if response.choices[0].message.tool_calls:
     if function_name == "lookup_weather":
         messages.append(response.choices[0].message)
         result = lookup_weather(**arguments)
-        messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": str(result)})
+        messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result)})
         response = client.chat.completions.create(model=MODEL_NAME, messages=messages, tools=tools)
         print(response.choices[0].message.content)

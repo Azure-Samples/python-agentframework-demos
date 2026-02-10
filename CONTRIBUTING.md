@@ -47,7 +47,7 @@ chances of your issue being dealt with quickly:
 * **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be
   causing the problem (line of code or commit)
 
-You can file new issues by providing the above information at the corresponding repository's issues link: 
+You can file new issues by providing the above information at the corresponding repository's issues link:
 replace`[organization-name]` and `[repository-name]` in
 `https://github.com/[organization-name]/[repository-name]/issues/new` .
 

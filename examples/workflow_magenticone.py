@@ -43,7 +43,9 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 # Initialize rich console
 console = Console()
@@ -140,7 +142,11 @@ async def main():
                 next_agent = ledger.next_speaker.answer
                 instruction = ledger.instruction_or_question.answer
 
-                status_text = f"Plan satisfied? {satisfied} | Making progress? {progress} {loop}\n\n➡️  Next step: [bold]{next_agent}[/bold]\n{instruction}"
+                status_text = (
+                    f"Plan satisfied? {satisfied} | Making progress? {progress} {loop}\n\n"
+                    f"➡️  Next step: [bold]{next_agent}[/bold]\n"
+                    f"{instruction}"
+                )
                 console.print(
                     Panel(
                         status_text,
@@ -149,7 +155,6 @@ async def main():
                         padding=(1, 2),
                     )
                 )
-                            
 
         elif isinstance(event, WorkflowOutputEvent):
             output_event = event

@@ -1,6 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm
 
-COPY requirements.txt /tmp/pip-tmp/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
-    && rm -rf /tmp/pip-tmp
+COPY pyproject.toml uv.lock /tmp/uv-tmp/
+
+RUN cd /tmp/uv-tmp && uv sync --no-cache \
+    && rm -rf /tmp/uv-tmp

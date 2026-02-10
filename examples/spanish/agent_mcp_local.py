@@ -10,13 +10,13 @@ from dotenv import load_dotenv
 from rich import print
 from rich.logging import RichHandler
 
-# Configurar el registro
+# Configura logging
 handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
 logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8000/mcp/")
@@ -37,16 +37,23 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"),
+    )
 
 
 async def main() -> None:
-    """Ejecuta un agente conectado a un servidor MCP local para registro de gastos."""
+    """Ejecuta un agente conectado a un servidor MCP local para registrar gastos."""
     async with (
         MCPStreamableHTTPTool(name="Servidor MCP de Gastos", url=MCP_SERVER_URL) as mcp_server,
         ChatAgent(
             chat_client=client,
-            instructions=f"Ayudas a los usuarios con tareas usando las herramientas disponibles. La fecha de hoy es {datetime.now().strftime('%Y-%m-%d')}. Responde en español.",
+            instructions=(
+                "Ayudas a la gente con tareas usando las herramientas disponibles. "
+                f"La fecha de hoy es {datetime.now().strftime('%Y-%m-%d')}. "
+                "Responde en español."
+            ),
             tools=[mcp_server],
         ) as agent,
     ):

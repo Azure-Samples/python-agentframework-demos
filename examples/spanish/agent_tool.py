@@ -12,13 +12,13 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Setup logging
+# Configura logging
 handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
 logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -38,11 +38,13 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
 def get_weather(
-    city: Annotated[str, Field(description="Nombre completo de la ciudad")],
+    city: Annotated[str, Field(description="Nombre de la ciudad")],
 ) -> dict:
     """Devuelve datos meteorológicos para una ciudad: temperatura y descripción."""
     logger.info(f"Obteniendo el clima para {city}")
@@ -60,7 +62,7 @@ def get_weather(
 
 agent = ChatAgent(
     chat_client=client,
-    instructions="Eres un agente informativo. Responde a las preguntas con alegría.",
+    instructions="Eres un agente informativo. Responde a las preguntas con buena onda.",
     tools=[get_weather],
 )
 

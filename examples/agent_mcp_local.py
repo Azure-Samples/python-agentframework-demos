@@ -37,7 +37,10 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"),
+    )
 
 
 async def main() -> None:
@@ -46,7 +49,10 @@ async def main() -> None:
         MCPStreamableHTTPTool(name="Expenses MCP Server", url=MCP_SERVER_URL) as mcp_server,
         ChatAgent(
             chat_client=client,
-            instructions=f"You help users with tasks using the available tools. Today's date is {datetime.now().strftime('%Y-%m-%d')}.",
+            instructions=(
+                "You help users with tasks using the available tools. "
+                f"Today's date is {datetime.now().strftime('%Y-%m-%d')}."
+            ),
             tools=[mcp_server],
         ) as agent,
     ):

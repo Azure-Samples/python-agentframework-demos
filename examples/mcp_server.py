@@ -46,7 +46,7 @@ class Category(Enum):
 
 @mcp.tool
 async def add_expense(
-    date: Annotated[date, "Date of the expense in YYYY-MM-DD format"],
+    expense_date: Annotated[date, "Date of the expense in YYYY-MM-DD format"],
     amount: Annotated[float, "Positive numeric amount of the expense"],
     category: Annotated[Category, "Category label"],
     description: Annotated[str, "Human-readable description of the expense"],
@@ -56,7 +56,7 @@ async def add_expense(
     if amount <= 0:
         return "Error: Amount must be positive"
 
-    date_iso = date.isoformat()
+    date_iso = expense_date.isoformat()
     logger.info(f"Adding expense: ${amount} for {description} on {date_iso}")
 
     try:
@@ -106,4 +106,4 @@ async def get_expenses_data() -> str:
 
 if __name__ == "__main__":
     logger.info("MCP Expenses server starting (HTTP mode on port 8000)")
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
+    mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)

@@ -14,13 +14,13 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Setup logging
+# Configura logging
 handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
 logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -40,7 +40,9 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
 # ----------------------------------------------------------------------------------
@@ -49,7 +51,7 @@ else:
 
 
 def get_weather(
-    city: Annotated[str, Field(description="Ciudad para obtener el clima.")],
+    city: Annotated[str, Field(description="Ciudad para consultar el clima.")],
     date: Annotated[str, Field(description="Fecha (YYYY-MM-DD) para la que se quiere el clima.")],
 ) -> dict:
     """Devuelve datos meteorológicos para una ciudad y fecha dadas."""
@@ -61,8 +63,8 @@ def get_weather(
 
 
 def get_activities(
-    city: Annotated[str, Field(description="Ciudad para obtener actividades.")],
-    date: Annotated[str, Field(description="Fecha (YYYY-MM-DD) para obtener actividades.")],
+    city: Annotated[str, Field(description="Ciudad para consultar actividades.")],
+    date: Annotated[str, Field(description="Fecha (YYYY-MM-DD) para consultar actividades.")],
 ) -> list[dict]:
     """Devuelve una lista de actividades para la ciudad y la fecha indicadas."""
     logger.info(f"Obteniendo actividades para {city} en {date}")
@@ -82,7 +84,7 @@ def get_current_date() -> str:
 weekend_agent = ChatAgent(
     chat_client=client,
     instructions=(
-        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
+        "Ayudas a la gente a planear su fin de semana y elegir las mejores actividades según el clima. "
         "Si una actividad sería desagradable con el clima previsto, no la sugieras. "
         "Incluye la fecha del fin de semana en tu respuesta."
     ),
@@ -151,7 +153,7 @@ def check_fridge() -> list[str]:
 meal_agent = ChatAgent(
     chat_client=client,
     instructions=(
-        "Ayudas a las personas a planear comidas y elegir las mejores recetas. "
+        "Ayudas a la gente a planear comidas y elegir las mejores recetas. "
         "Incluye los ingredientes e instrucciones de cocina en tu respuesta. "
         "Indica lo que la persona necesita comprar cuando falten ingredientes en su refrigerador."
     ),

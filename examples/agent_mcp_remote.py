@@ -35,16 +35,25 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"),
+    )
 
 
 async def main() -> None:
     """Run an agent that uses a remote MCP server (Microsoft Learn) to answer documentation questions."""
     async with (
-        MCPStreamableHTTPTool(name="Microsoft Learn MCP", url="https://learn.microsoft.com/api/mcp") as mcp_server,
+        MCPStreamableHTTPTool(
+            name="Microsoft Learn MCP",
+            url="https://learn.microsoft.com/api/mcp",
+        ) as mcp_server,
         ChatAgent(
             chat_client=client,
-            instructions="You help with Microsoft documentation questions. Use the available tools to search for relevant docs.",
+            instructions=(
+                "You help with Microsoft documentation questions. "
+                "Use the available tools to search for relevant docs."
+            ),
             tools=[mcp_server],
         ) as agent,
     ):

@@ -7,7 +7,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from rich import print
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -27,10 +27,14 @@ elif API_HOST == "github":
         model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    )
 
 
-agent = ChatAgent(chat_client=client, instructions="Eres un agente informativo. Responde a las preguntas con alegría.")
+agent = ChatAgent(
+    chat_client=client, instructions="Eres un agente informativo. Responde a las preguntas con buena onda."
+)
 
 
 async def main():

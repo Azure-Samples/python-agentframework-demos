@@ -1,7 +1,7 @@
 """
 Servidor MCP de ejemplo para seguimiento de gastos.
 
-Ejecuta este servidor primero, luego usa agent_mcp_local.py para conectarse:
+Ejecuta este servidor primero y luego usa agent_mcp_local.py para conectarte:
     python examples/spanish/mcp_server.py
     python examples/spanish/agent_mcp_local.py
 """
@@ -26,7 +26,7 @@ mcp = FastMCP("Rastreador de Gastos")
 
 
 class MetodoPago(Enum):
-    """Métodos de pago aceptados para gastos."""
+    """Métodos de pago que puedes usar para gastos."""
 
     AMEX = "amex"
     VISA = "visa"
@@ -34,7 +34,7 @@ class MetodoPago(Enum):
 
 
 class Categoria(Enum):
-    """Categorías de gastos para clasificación."""
+    """Categorías de gastos para clasificar."""
 
     COMIDA = "comida"
     TRANSPORTE = "transporte"
@@ -46,7 +46,7 @@ class Categoria(Enum):
 
 @mcp.tool
 async def agregar_gasto(
-    date: Annotated[date, "Fecha del gasto en formato AAAA-MM-DD"],
+    fecha_gasto: Annotated[date, "Fecha del gasto en formato AAAA-MM-DD"],
     amount: Annotated[float, "Monto numérico positivo del gasto"],
     category: Annotated[Categoria, "Etiqueta de categoría"],
     description: Annotated[str, "Descripción legible del gasto"],
@@ -56,7 +56,7 @@ async def agregar_gasto(
     if amount <= 0:
         return "Error: El monto debe ser positivo"
 
-    date_iso = date.isoformat()
+    date_iso = fecha_gasto.isoformat()
     logger.info(f"Agregando gasto: ${amount} por {description} el {date_iso}")
 
     try:
@@ -77,7 +77,7 @@ async def agregar_gasto(
 
 @mcp.resource("resource://expenses")
 async def obtener_datos_gastos() -> str:
-    """Obtiene los datos de gastos del archivo CSV."""
+    """Obtiene los datos de gastos desde el archivo CSV."""
     logger.info("Datos de gastos consultados")
 
     try:
@@ -106,4 +106,4 @@ async def obtener_datos_gastos() -> str:
 
 if __name__ == "__main__":
     logger.info("Servidor MCP de Gastos iniciando (modo HTTP en puerto 8000)")
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
+    mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)
