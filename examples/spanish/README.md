@@ -34,7 +34,7 @@ Este repositorio ofrece ejemplos de [Microsoft Agent Framework](https://learn.mi
 ## Cómo empezar
 
 Tienes varias opciones para comenzar con este repositorio.
-La forma más rápida es usar GitHub Codespaces, ya que te configurará todo automáticamente, pero también puedes [configurarlo localmente](#entorno-local).
+La forma más rápida es usar GitHub Codespaces, ya que te deja todo listo automáticamente, pero también puedes [configurarlo localmente](#entorno-local).
 
 ### GitHub Codespaces
 
@@ -163,13 +163,17 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 
 | Ejemplo | Descripción |
 | ------- | ----------- |
-| [basic.py](basic.py) | Usa Agent Framework para crear un agente informativo básico. |
-| [tool.py](tool.py) | Usa Agent Framework para crear un agente con una única herramienta de clima. |
-| [tools.py](tools.py) | Usa Agent Framework para crear un agente planificador de fin de semana con múltiples herramientas. |
-| [supervisor.py](supervisor.py) | Usa Agent Framework con un supervisor que orquesta subagentes de actividades y recetas. |
-| [magenticone.py](magenticone.py) | Usa Agent Framework para crear un agente MagenticOne. |
-| [hitl.py](hitl.py) | Usa Agent Framework con human-in-the-loop (HITL) para confirmar o editar respuestas. |
-| [workflow.py](workflow.py) | Usa Agent Framework para crear un agente basado en flujo de trabajo. |
+| [agent_basic.py](agent_basic.py) | Usa Agent Framework para crear un agente informativo básico. |
+| [agent_tool.py](agent_tool.py) | Usa Agent Framework para crear un agente con una única herramienta de clima. |
+| [agent_tools.py](agent_tools.py) | Usa Agent Framework para crear un agente planificador de fin de semana con múltiples herramientas. |
+| [agent_supervisor.py](agent_supervisor.py) | Usa Agent Framework con un supervisor que orquesta subagentes de actividades y recetas. |
+| [workflow_magenticone.py](workflow_magenticone.py) | Usa Agent Framework para crear un flujo de trabajo multi-agente MagenticOne. |
+| [workflow_hitl.py](workflow_hitl.py) | Usa Agent Framework con human-in-the-loop (HITL) para confirmar o editar respuestas. |
+| [agent_middleware.py](agent_middleware.py) | Usa Agent Framework con middleware de agente, chat y funciones para registro, temporización y bloqueo. |
+| [agent_mcp_remote.py](agent_mcp_remote.py) | Un agente que usa un servidor MCP remoto (Microsoft Learn) para búsqueda de documentación. |
+| [agent_mcp_local.py](agent_mcp_local.py) | Un agente conectado a un servidor MCP local (ej. para registro de gastos). |
+| [openai_tool_calling.py](openai_tool_calling.py) | Llamadas a funciones con el SDK de OpenAI de bajo nivel, mostrando despacho manual de herramientas. |
+| [workflow_basic.py](workflow_basic.py) | Usa Agent Framework para crear un agente basado en flujo de trabajo. |
 
 ## Recursos
 

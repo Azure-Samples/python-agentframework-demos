@@ -162,13 +162,17 @@ You can run the examples in this repository by executing the scripts in the `exa
 
 | Example | Description |
 | ------- | ----------- |
-| [basic.py](examples/basic.py) | Uses Agent Framework to build a basic informational agent. |
-| [tool.py](examples/tool.py) | Uses Agent Framework to build an agent with a single weather tool. |
-| [tools.py](examples/tools.py) | Uses Agent Framework to build a weekend planning agent with multiple tools. |
-| [supervisor.py](examples/supervisor.py) | Uses Agent Framework with a supervisor orchestrating activity and recipe sub-agents. |
-| [magenticone.py](examples/magenticone.py) | Uses Agent Framework to build a MagenticOne agent. |
-| [hitl.py](examples/hitl.py) | Uses Agent Framework with human-in-the-loop (HITL) for tool-enabled agents with human feedback. |
-| [workflow.py](examples/workflow.py) | Uses Agent Framework to build a workflow-based agent. |
+| [agent_basic.py](examples/agent_basic.py) | A basic informational agent. |
+| [agent_tool.py](examples/agent_tool.py) | An agent with a single weather tool. |
+| [agent_tools.py](examples/agent_tools.py) | A weekend planning agent with multiple tools. |
+| [agent_supervisor.py](examples/agent_supervisor.py) | A supervisor orchestrating activity and recipe sub-agents. |
+| [workflow_magenticone.py](examples/workflow_magenticone.py) | A MagenticOne multi-agent workflow. |
+| [workflow_hitl.py](examples/workflow_hitl.py) | Human-in-the-loop (HITL) for tool-enabled agents with human feedback. |
+| [agent_middleware.py](examples/agent_middleware.py) | Agent, chat, and function middleware for logging, timing, and blocking. |
+| [agent_mcp_remote.py](examples/agent_mcp_remote.py) | An agent using a remote MCP server (Microsoft Learn) for documentation search. |
+| [agent_mcp_local.py](examples/agent_mcp_local.py) | An agent connected to a local MCP server (e.g. for expense logging). |
+| [openai_tool_calling.py](examples/openai_tool_calling.py) | Tool calling with the low-level OpenAI SDK, showing manual tool dispatch. |
+| [workflow_basic.py](examples/workflow_basic.py) | A workflow-based agent. |
 
 ## Resources
 
