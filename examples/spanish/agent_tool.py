@@ -45,7 +45,7 @@ else:
 
 @tool
 def get_weather(
-    city: Annotated[str, Field(description="Nombre de la ciudad")],
+    city: Annotated[str, Field(description="City name")],
 ) -> dict:
     """Devuelve datos meteorológicos para una ciudad: temperatura y descripción."""
     logger.info(f"Obteniendo el clima para {city}")

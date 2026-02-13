@@ -52,7 +52,6 @@ async def main() -> None:
             instructions=(
                 "Ayudas a la gente con tareas usando las herramientas disponibles. "
                 f"La fecha de hoy es {datetime.now().strftime('%Y-%m-%d')}. "
-                "Responde en español."
             ),
             tools=[mcp_server],
         ) as agent,

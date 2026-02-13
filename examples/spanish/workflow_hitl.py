@@ -58,8 +58,8 @@ else:
 Ejemplo: agentes con herramientas y retroalimentación humana
 
 Diseño del pipeline:
-agente_escritor (usa herramientas de Azure OpenAI) -> Coordinador -> agente_escritor
--> Coordinador -> agente_editor_final -> Coordinador -> salida
+writer_agent (usa herramientas de Azure OpenAI) -> Coordinator -> writer_agent
+-> Coordinator -> final_editor_agent -> Coordinator -> salida
 
 El agente escritor llama a herramientas para reunir datos del producto antes de escribir una versión preliminar.
 Un ejecutor personalizado empaqueta la versión preliminar y emite un RequestInfoEvent para que un humano pueda comentar;
@@ -78,11 +78,18 @@ Requisitos previos:
 
 # NOTA: approval_mode="never_require" es por brevedad del ejemplo.
 @tool(approval_mode="never_require")
-def obtener_resumen_producto(
-    nombre_producto: Annotated[str, Field(description="Nombre del producto a buscar.")],
+def fetch_product_brief(
+    product_name: Annotated[str, Field(description="Product name to look up.")],
 ) -> str:
     """Devuelve un resumen de marketing para un producto."""
-    resumenes = {
+    briefs = {
+        "lumenx desk lamp": (
+            "Producto: Lámpara de Escritorio LumenX\n"
+            "- Brazo ajustable de tres puntos con rotación de 270°.\n"
+            "- Espectro LED personalizado de cálido a neutro (2700K-4000K).\n"
+            "- Almohadilla de carga USB-C integrada en la base.\n"
+            "- Diseñada para oficinas en casa y sesiones de estudio nocturnas."
+        ),
         "lámpara de escritorio lumenx": (
             "Producto: Lámpara de Escritorio LumenX\n"
             "- Brazo ajustable de tres puntos con rotación de 270°.\n"
@@ -91,119 +98,122 @@ def obtener_resumen_producto(
             "- Diseñada para oficinas en casa y sesiones de estudio nocturnas."
         )
     }
-    return resumenes.get(nombre_producto.lower(), f"No hay resumen almacenado para '{nombre_producto}'.")
+    return briefs.get(product_name.lower(), f"No hay resumen almacenado para '{product_name}'.")
 
 
 # NOTA: approval_mode="never_require" es por brevedad del ejemplo.
 @tool(approval_mode="never_require")
-def obtener_perfil_voz_marca(
-    nombre_voz: Annotated[str, Field(description="Voz de marca o campaña a emular.")],
+def get_brand_voice_profile(
+    voice_name: Annotated[str, Field(description="Brand or campaign voice to emulate.")],
 ) -> str:
     """Devuelve las directrices para la voz de marca solicitada."""
-    voces = {
+    voices = {
+        "lumenx launch": (
+            "Directrices de voz:\n"
+            "- Amigable y moderno con oraciones concisas.\n"
+            "- Resaltar beneficios prácticos antes que estéticos.\n"
+            "- Terminar con una invitación a imaginar el producto en uso diario."
+        ),
         "lanzamiento lumenx": (
             "Directrices de voz:\n"
             "- Amigable y moderno con oraciones concisas.\n"
             "- Resaltar beneficios prácticos antes que estéticos.\n"
             "- Terminar con una invitación a imaginar el producto en uso diario."
-        )
+        ),
     }
-    return voces.get(nombre_voz.lower(), f"No hay perfil de voz almacenado para '{nombre_voz}'.")
+    return voices.get(voice_name.lower(), f"No hay perfil de voz almacenado para '{voice_name}'.")
 
 
 @dataclass
-class SolicitudRetroalimentacionBorrador:
+class DraftFeedbackRequest:
     """Carga útil enviada para revisión humana."""
 
-    indicacion: str = ""
-    texto_borrador: str = ""
-    conversacion: list[ChatMessage] = field(default_factory=list)  # type: ignore[reportUnknownVariableType]
+    prompt: str = ""
+    draft_text: str = ""
+    conversation: list[ChatMessage] = field(default_factory=list)  # type: ignore[reportUnknownVariableType]
 
 
-class Coordinador(Executor):
+class Coordinator(Executor):
     """Puente entre el agente escritor, la retroalimentación humana y el editor final."""
 
-    def __init__(self, id: str, id_escritor: str, id_editor_final: str) -> None:
+    def __init__(self, id: str, writer_id: str, final_editor_id: str) -> None:
         super().__init__(id)
-        self.id_escritor = id_escritor
-        self.id_editor_final = id_editor_final
+        self.writer_id = writer_id
+        self.final_editor_id = final_editor_id
 
     @handler
-    async def al_responder_escritor(
+    async def on_writer_response(
         self,
-        borrador: AgentExecutorResponse,
+        draft: AgentExecutorResponse,
         ctx: WorkflowContext[Never, AgentResponse],
     ) -> None:
         """Maneja las respuestas de los otros dos agentes en el workflow."""
-        if borrador.executor_id == self.id_editor_final:
+        if draft.executor_id == self.final_editor_id:
             # Respuesta del editor final; emitir salida directamente.
-            await ctx.yield_output(borrador.agent_response)
+            await ctx.yield_output(draft.agent_response)
             return
 
         # Respuesta del agente escritor; solicitar retroalimentación humana.
         # Preservar la conversación completa para que el editor final
         # pueda ver los rastros de herramientas y el prompt inicial.
-        conversacion: list[ChatMessage]
-        if borrador.full_conversation is not None:
-            conversacion = list(borrador.full_conversation)
+        conversation: list[ChatMessage]
+        if draft.full_conversation is not None:
+            conversation = list(draft.full_conversation)
         else:
-            conversacion = list(borrador.agent_response.messages)
-        texto_borrador = borrador.agent_response.text.strip()
-        if not texto_borrador:
-            texto_borrador = "No se produjo ninguna versión preliminar."
+            conversation = list(draft.agent_response.messages)
+        draft_text = draft.agent_response.text.strip()
+        if not draft_text:
+            draft_text = "No se produjo ninguna versión preliminar."
 
-        indicacion = (
+        prompt = (
             "Revisa la versión preliminar del escritor y comparte una nota direccional breve "
             "(ajustes de tono, detalles imprescindibles, público objetivo, etc.). "
             "Mantén la nota en menos de 30 palabras."
         )
         await ctx.request_info(
-            request_data=SolicitudRetroalimentacionBorrador(
-                indicacion=indicacion, texto_borrador=texto_borrador, conversacion=conversacion
-            ),
+            request_data=DraftFeedbackRequest(prompt=prompt, draft_text=draft_text, conversation=conversation),
             response_type=str,
         )
 
     @response_handler
-    async def al_recibir_retroalimentacion_humana(
+    async def on_human_feedback(
         self,
-        solicitud_original: SolicitudRetroalimentacionBorrador,
-        retroalimentacion: str,
+        original_request: DraftFeedbackRequest,
+        feedback: str,
         ctx: WorkflowContext[AgentExecutorRequest],
     ) -> None:
-        nota = retroalimentacion.strip()
-        if nota.lower() == "aprobar":
+        note = feedback.strip()
+        if note.lower() in {"approve", "aprobar"}:
             # El humano aprobó el borrador tal como está; reenviarlo sin cambios.
             await ctx.send_message(
                 AgentExecutorRequest(
-                    messages=solicitud_original.conversacion
+                    messages=original_request.conversation
                     + [ChatMessage(Role.USER, text="La versión preliminar está aprobada tal como está.")],
                     should_respond=True,
                 ),
-                target_id=self.id_editor_final,
+                target_id=self.final_editor_id,
             )
             return
 
         # El humano proporcionó retroalimentación; indicar al escritor que revise.
-        conversacion: list[ChatMessage] = list(solicitud_original.conversacion)
-        instruccion = (
+        conversation: list[ChatMessage] = list(original_request.conversation)
+        instruction = (
             "Un revisor humano compartió la siguiente guía:\n"
-            f"{nota or 'No se proporcionó guía específica.'}\n\n"
+            f"{note or 'No se proporcionó guía específica.'}\n\n"
             "Reescribe la versión preliminar del mensaje anterior del asistente en una versión final pulida. "
             "Mantén la respuesta en menos de 120 palabras y refleja los ajustes de tono solicitados."
         )
-        conversacion.append(ChatMessage(Role.USER, text=instruccion))
+        conversation.append(ChatMessage(Role.USER, text=instruction))
         await ctx.send_message(
-            AgentExecutorRequest(messages=conversacion, should_respond=True),
-            target_id=self.id_escritor,
+            AgentExecutorRequest(messages=conversation, should_respond=True), target_id=self.writer_id
         )
 
 
-def crear_agente_escritor() -> Agent:
+def create_writer_agent() -> Agent:
     """Crea un agente escritor con herramientas."""
     return Agent(
         client=client,
-        name="agente_escritor",
+        name="writer_agent",
         instructions=(
             "Eres un escritor de marketing. "
             "Llama a las herramientas disponibles antes de escribir una versión preliminar "
@@ -212,16 +222,16 @@ def crear_agente_escritor() -> Agent:
             "Resume las salidas de las herramientas como viñetas y luego produce una versión preliminar "
             "de 3 oraciones."
         ),
-        tools=[obtener_resumen_producto, obtener_perfil_voz_marca],
+        tools=[fetch_product_brief, get_brand_voice_profile],
         tool_choice="required",
     )
 
 
-def crear_agente_editor_final() -> Agent:
+def create_final_editor_agent() -> Agent:
     """Crea un agente editor final."""
     return Agent(
         client=client,
-        name="agente_editor_final",
+        name="final_editor_agent",
         instructions=(
             "Eres un editor que pule el texto de marketing después de la aprobación humana. "
             "Corrige cualquier problema legal o fáctico. Devuelve la versión final aunque no se necesiten cambios."
@@ -229,130 +239,130 @@ def crear_agente_editor_final() -> Agent:
     )
 
 
-def mostrar_actualizacion_ejecucion_agente(evento: AgentRunUpdateEvent, ultimo_ejecutor: str | None) -> None:
+def display_agent_run_update(event: AgentRunUpdateEvent, last_executor: str | None) -> None:
     """Muestra un AgentRunUpdateEvent en un formato legible."""
-    llamadas_herramientas_impresas: set[str] = set()
-    resultados_herramientas_impresos: set[str] = set()
-    id_ejecutor = evento.executor_id
-    actualizacion = evento.data
+    printed_tool_calls: set[str] = set()
+    printed_tool_results: set[str] = set()
+    executor_id = event.executor_id
+    update = event.data
     # Extraer e imprimir cualquier nueva llamada a herramienta o resultado de la actualización.
     # Content.type indica el tipo de contenido: 'function_call', 'function_result', 'text', etc.
-    llamadas_funcion = [c for c in actualizacion.contents if isinstance(c, Content) and c.type == "function_call"]
-    resultados_funcion = [c for c in actualizacion.contents if isinstance(c, Content) and c.type == "function_result"]
-    if id_ejecutor != ultimo_ejecutor:
-        if ultimo_ejecutor is not None:
+    function_calls = [c for c in update.contents if isinstance(c, Content) and c.type == "function_call"]
+    function_results = [c for c in update.contents if isinstance(c, Content) and c.type == "function_result"]
+    if executor_id != last_executor:
+        if last_executor is not None:
             print()
-        print(f"{id_ejecutor}:", end=" ", flush=True)
-        ultimo_ejecutor = id_ejecutor
+        print(f"{executor_id}:", end=" ", flush=True)
+        last_executor = executor_id
     # Imprimir cualquier nueva llamada a herramienta antes de la actualización de texto.
-    for llamada in llamadas_funcion:
-        if llamada.call_id in llamadas_herramientas_impresas:
+    for call in function_calls:
+        if call.call_id in printed_tool_calls:
             continue
-        llamadas_herramientas_impresas.add(llamada.call_id)
-        args = llamada.arguments
-        vista_previa_args = json.dumps(args, ensure_ascii=False) if isinstance(args, dict) else (args or "").strip()
+        printed_tool_calls.add(call.call_id)
+        args = call.arguments
+        args_preview = json.dumps(args, ensure_ascii=False) if isinstance(args, dict) else (args or "").strip()
         print(
-            f"\n{id_ejecutor} [llamada-herramienta] {llamada.name}({vista_previa_args})",
+            f"\n{executor_id} [llamada-herramienta] {call.name}({args_preview})",
             flush=True,
         )
-        print(f"{id_ejecutor}:", end=" ", flush=True)
+        print(f"{executor_id}:", end=" ", flush=True)
     # Imprimir cualquier nuevo resultado de herramienta antes de la actualización de texto.
-    for resultado in resultados_funcion:
-        if resultado.call_id in resultados_herramientas_impresos:
+    for result in function_results:
+        if result.call_id in printed_tool_results:
             continue
-        resultados_herramientas_impresos.add(resultado.call_id)
-        texto_resultado = resultado.result
-        if not isinstance(texto_resultado, str):
-            texto_resultado = json.dumps(texto_resultado, ensure_ascii=False)
+        printed_tool_results.add(result.call_id)
+        result_text = result.result
+        if not isinstance(result_text, str):
+            result_text = json.dumps(result_text, ensure_ascii=False)
         print(
-            f"\n{id_ejecutor} [resultado-herramienta] {resultado.call_id}: {texto_resultado}",
+            f"\n{executor_id} [resultado-herramienta] {result.call_id}: {result_text}",
             flush=True,
         )
-        print(f"{id_ejecutor}:", end=" ", flush=True)
+        print(f"{executor_id}:", end=" ", flush=True)
     # Finalmente, imprimir la actualización de texto.
-    print(actualizacion, end="", flush=True)
+    print(update, end="", flush=True)
 
 
 async def main() -> None:
     """Ejecuta el workflow y conecta la retroalimentación humana entre dos agentes."""
 
     # Construir el workflow.
-    flujo_trabajo = (
+    workflow = (
         WorkflowBuilder()
-        .register_agent(crear_agente_escritor, name="agente_escritor")
-        .register_agent(crear_agente_editor_final, name="agente_editor_final")
+        .register_agent(create_writer_agent, name="writer_agent")
+        .register_agent(create_final_editor_agent, name="final_editor_agent")
         .register_executor(
-            lambda: Coordinador(
-                id="coordinador",
-                id_escritor="agente_escritor",
-                id_editor_final="agente_editor_final",
+            lambda: Coordinator(
+                id="coordinator",
+                writer_id="writer_agent",
+                final_editor_id="final_editor_agent",
             ),
-            name="coordinador",
+            name="coordinator",
         )
-        .set_start_executor("agente_escritor")
-        .add_edge("agente_escritor", "coordinador")
-        .add_edge("coordinador", "agente_escritor")
-        .add_edge("agente_editor_final", "coordinador")
-        .add_edge("coordinador", "agente_editor_final")
+        .set_start_executor("writer_agent")
+        .add_edge("writer_agent", "coordinator")
+        .add_edge("coordinator", "writer_agent")
+        .add_edge("final_editor_agent", "coordinator")
+        .add_edge("coordinator", "final_editor_agent")
         .build()
     )
 
     # Interruptor para activar la visualización de actualizaciones de ejecución del agente.
     # Por defecto está desactivado para reducir el desorden durante la entrada humana.
-    mostrar_actualizaciones = False
+    display_agent_run_update_switch = False
 
     print(
         "Modo interactivo. Cuando se te solicite, proporciona una nota de retroalimentación breve para el editor.",
         flush=True,
     )
 
-    respuestas_pendientes: dict[str, str] | None = None
-    completado = False
-    ejecucion_inicial = True
+    pending_responses: dict[str, str] | None = None
+    completed = False
+    initial_run = True
 
-    while not completado:
-        ultimo_ejecutor: str | None = None
-        if ejecucion_inicial:
-            stream = flujo_trabajo.run_stream(
+    while not completed:
+        last_executor: str | None = None
+        if initial_run:
+            stream = workflow.run_stream(
                 "Crea un breve texto de lanzamiento para la lámpara de escritorio LumenX. "
                 "Enfatiza la ajustabilidad y la iluminación cálida."
             )
-            ejecucion_inicial = False
-        elif respuestas_pendientes is not None:
-            stream = flujo_trabajo.send_responses_streaming(respuestas_pendientes)
-            respuestas_pendientes = None
+            initial_run = False
+        elif pending_responses is not None:
+            stream = workflow.send_responses_streaming(pending_responses)
+            pending_responses = None
         else:
             break
 
-        solicitudes: list[tuple[str, SolicitudRetroalimentacionBorrador]] = []
+        requests: list[tuple[str, DraftFeedbackRequest]] = []
 
-        async for evento in stream:
-            if isinstance(evento, AgentRunUpdateEvent) and mostrar_actualizaciones:
-                mostrar_actualizacion_ejecucion_agente(evento, ultimo_ejecutor)
-            if isinstance(evento, RequestInfoEvent) and isinstance(evento.data, SolicitudRetroalimentacionBorrador):
+        async for event in stream:
+            if isinstance(event, AgentRunUpdateEvent) and display_agent_run_update_switch:
+                display_agent_run_update(event, last_executor)
+            if isinstance(event, RequestInfoEvent) and isinstance(event.data, DraftFeedbackRequest):
                 # Guardar la solicitud para solicitar al humano después de que se complete el stream.
-                solicitudes.append((evento.request_id, evento.data))
-                ultimo_ejecutor = None
-            elif isinstance(evento, WorkflowOutputEvent):
-                ultimo_ejecutor = None
-                respuesta = evento.data
+                requests.append((event.request_id, event.data))
+                last_executor = None
+            elif isinstance(event, WorkflowOutputEvent):
+                last_executor = None
+                response = event.data
                 print("\n===== Salida final =====")
-                texto_final = getattr(respuesta, "text", str(respuesta))
-                print(texto_final.strip())
-                completado = True
+                final_text = getattr(response, "text", str(response))
+                print(final_text.strip())
+                completed = True
 
-        if solicitudes and not completado:
-            respuestas: dict[str, str] = {}
-            for id_solicitud, solicitud in solicitudes:
+        if requests and not completed:
+            responses: dict[str, str] = {}
+            for request_id, request in requests:
                 print("\n----- Versión preliminar del escritor -----")
-                print(solicitud.texto_borrador.strip())
-                print("\nProporciona guía para el editor (o 'aprobar' para aceptar la versión preliminar).")
-                respuesta_usuario = input("Retroalimentación humana: ").strip()  # noqa: ASYNC250
-                if respuesta_usuario.lower() == "salir":
+                print(request.draft_text.strip())
+                print("\nProporciona guía para el editor (o 'approve'/'aprobar' para aceptar la versión preliminar).")
+                answer = input("Retroalimentación humana: ").strip()  # noqa: ASYNC250
+                if answer.lower() in {"exit", "salir"}:
                     print("Saliendo...")
                     return
-                respuestas[id_solicitud] = respuesta_usuario
-            respuestas_pendientes = respuestas
+                responses[request_id] = answer
+            pending_responses = responses
 
     print("Workflow completado.")
 

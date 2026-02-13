@@ -1,8 +1,8 @@
 {
     "name": "python-agentframework-demos",
-    "dockerComposeFile": "docker-compose.yaml",
+    "dockerComposeFile": "docker-compose.yml",
     "service": "app",
-    "workspaceFolder": "/workspace",
+    "workspaceFolder": "/workspaces/python-agentframework-demos",
     "forwardPorts": [6379],
     "features": {
         "ghcr.io/azure/azure-dev/azd:latest": {},

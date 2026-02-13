@@ -50,28 +50,28 @@ else:
 console = Console()
 
 # Crea los agentes
-agente_local = Agent(
+local_agent = Agent(
     client=client,
     instructions=(
         "Eres un asistente útil: puedes sugerir actividades locales auténticas e interesantes "
         "o lugares para visitar, y puedes usar cualquier información de contexto que te compartan."
     ),
-    name="agente_local",
-    description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
+    name="local_agent",
+    description="A local assistant who can suggest local activities or places to visit.",
 )
 
-agente_idioma = Agent(
+language_agent = Agent(
     client=client,
     instructions=(
         "Eres un asistente útil: puedes revisar planes de viaje y dar feedback con tips importantes/críticos "
         "para manejar mejor desafíos de idioma o comunicación en el destino. "
         "Si el plan ya incluye tips de idioma, puedes decir que está bien y explicar por qué."
     ),
-    name="agente_idioma",
-    description="Un asistente útil que puede proporcionar consejos de idioma para un destino dado.",
+    name="language_agent",
+    description="A helpful assistant that can provide language tips for a given destination.",
 )
 
-agente_resumen_viaje = Agent(
+travel_summary_agent = Agent(
     client=client,
     instructions=(
         "Eres un asistente útil: puedes tomar todas las sugerencias y consejos de los otros agentes "
@@ -79,24 +79,24 @@ agente_resumen_viaje = Agent(
         "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Da un resumen completo cuando ya integraste "
         "todas las perspectivas de los otros agentes."
     ),
-    name="agente_resumen_viaje",
-    description="Un asistente útil que puede resumir el plan de viaje.",
+    name="travel_summary_agent",
+    description="A helpful assistant that can summarize the travel plan.",
 )
 
 # Crea un agente manager para la orquestación
-agente_gerente = Agent(
+manager_agent = Agent(
     client=client,
     instructions="Coordinas un equipo para completar tareas de planificación de viaje de forma eficiente.",
-    name="agente_gerente",
-    description="Orquestador que coordina el flujo de trabajo de planificación de viajes",
+    name="magentic_manager",
+    description="Orchestrator that coordinates the travel-planning workflow",
 )
 
 # Construye el workflow de Magentic
-orquestador_magentico = (
+magentic_orchestrator = (
     MagenticBuilder()
-    .participants([agente_local, agente_idioma, agente_resumen_viaje])
+    .participants([local_agent, language_agent, travel_summary_agent])
     .with_manager(
-        agent=agente_gerente,
+        agent=manager_agent,
         max_round_count=20,
         max_stall_count=3,
         max_reset_count=2,
@@ -107,17 +107,17 @@ orquestador_magentico = (
 
 async def main():
     # Lleva registro del último mensaje para formatear la salida en modo streaming
-    ultimo_id_mensaje: str | None = None
-    evento_salida: WorkflowOutputEvent | None = None
+    last_message_id: str | None = None
+    output_event: WorkflowOutputEvent | None = None
 
-    async for event in orquestador_magentico.run_stream("Planifica un viaje de medio día a Costa Rica"):
+    async for event in magentic_orchestrator.run_stream("Planifica un viaje de medio día a Costa Rica"):
         if isinstance(event, AgentRunUpdateEvent):
-            id_mensaje = event.data.message_id
-            if id_mensaje != ultimo_id_mensaje:
-                if ultimo_id_mensaje is not None:
+            message_id = event.data.message_id
+            if message_id != last_message_id:
+                if last_message_id is not None:
                     console.print()  # Agregar espacio después del mensaje anterior
                 console.print(Rule(f"🤖 {event.executor_id}", style="bold blue"))
-                ultimo_id_mensaje = id_mensaje
+                last_message_id = message_id
             console.print(event.data, end="")
 
         elif isinstance(event, MagenticOrchestratorEvent):
@@ -156,16 +156,16 @@ async def main():
                 )
 
         elif isinstance(event, WorkflowOutputEvent):
-            evento_salida = event
+            output_event = event
 
-    if evento_salida:
+    if output_event:
         console.print()  # Agregar espacio
         # La salida del workflow de Magentic es una lista de ChatMessages con un solo mensaje final
-        mensajes_salida = cast(list[ChatMessage], evento_salida.data)
-        if mensajes_salida:
+        output_messages = cast(list[ChatMessage], output_event.data)
+        if output_messages:
             console.print(
                 Panel(
-                    Markdown(mensajes_salida[-1].text),
+                    Markdown(output_messages[-1].text),
                     title="🌎 Plan de Viaje Final",
                     border_style="bold green",
                     padding=(1, 2),
@@ -180,6 +180,6 @@ if __name__ == "__main__":
     if "--devui" in sys.argv:
         from agent_framework.devui import serve
 
-        serve(entities=[orquestador_magentico], auto_open=True)
+        serve(entities=[magentic_orchestrator], auto_open=True)
     else:
         asyncio.run(main())

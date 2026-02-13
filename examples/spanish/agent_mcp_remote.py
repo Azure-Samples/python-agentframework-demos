@@ -53,7 +53,6 @@ async def main() -> None:
             instructions=(
                 "Ayudas con preguntas sobre la documentación de Microsoft. "
                 "Usa las herramientas disponibles para buscar documentación relevante. "
-                "Responde en español."
             ),
             tools=[mcp_server],
         ) as agent,

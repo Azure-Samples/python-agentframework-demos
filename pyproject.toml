@@ -13,6 +13,7 @@ dependencies = [
     "aiohttp",
     "faker",
     "fastmcp",
+    "opentelemetry-exporter-otlp-proto-grpc",
     "agent-framework-core @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/core",
     "agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/devui",
     "agent-framework-redis @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/redis",

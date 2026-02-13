@@ -42,17 +42,17 @@ tools = [
         "type": "function",
         "function": {
             "name": "lookup_weather",
-            "description": "Consulta el clima para un nombre de ciudad o código postal dado.",
+            "description": "Look up weather for a given city name or zip code.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "city_name": {
                         "type": "string",
-                        "description": "El nombre de la ciudad",
+                        "description": "City name",
                     },
                     "zip_code": {
                         "type": "string",
-                        "description": "El código postal",
+                        "description": "Zip code",
                     },
                 },
                 "strict": True,
@@ -63,7 +63,7 @@ tools = [
 ]
 
 messages = [
-    {"role": "system", "content": "Eres un chatbot del clima. Responde en español."},
+    {"role": "system", "content": "Eres un chatbot del clima"},
     {"role": "user", "content": "¿Está soleado en Madrid?"},
 ]
 response = client.chat.completions.create(

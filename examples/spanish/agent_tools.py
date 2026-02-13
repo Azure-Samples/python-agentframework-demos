@@ -47,7 +47,7 @@ else:
 
 @tool
 def get_weather(
-    city: Annotated[str, Field(description="La ciudad para consultar el clima.")],
+    city: Annotated[str, Field(description="City to fetch the weather for.")],
 ) -> dict:
     """Devuelve datos meteorológicos para una ciudad: temperatura y descripción."""
     logger.info(f"Obteniendo el clima para {city}")
@@ -65,8 +65,8 @@ def get_weather(
 
 @tool
 def get_activities(
-    city: Annotated[str, Field(description="La ciudad para consultar actividades.")],
-    date: Annotated[str, Field(description="La fecha (YYYY-MM-DD) para consultar actividades.")],
+    city: Annotated[str, Field(description="City to fetch activities for.")],
+    date: Annotated[str, Field(description="Date (YYYY-MM-DD) to fetch activities for.")],
 ) -> list[dict]:
     """Devuelve una lista de actividades para una ciudad y fecha dadas."""
     logger.info(f"Obteniendo actividades para {city} en {date}")

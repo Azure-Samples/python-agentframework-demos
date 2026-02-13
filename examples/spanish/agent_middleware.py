@@ -5,11 +5,11 @@ Diagrama de flujo del middleware:
  │
  ▼
  ┌─────────────────────────────────────────────┐
- │         Middleware de Agente                │
+ │         Agent Middleware                    │
  │  (temporización, bloqueo, registro)         │
  │                                             │
  │  ┌───────────────────────────────────────┐  │
- │  │       Middleware de Chat              │  │
+ │  │       Chat Middleware                 │  │
  │  │  (registro, conteo de mensajes)       │  │
  │  │                                       │  │
  │  │        ┌──────────────┐               │  │
@@ -18,7 +18,7 @@ Diagrama de flujo del middleware:
  │  │               │ llamadas a funciones  │  │
  │  │               ▼                       │  │
  │  │  ┌──────────────────────────────────┐ │  │
- │  │  │   Middleware de Funciones        │ │  │
+ │  │  │   Function Middleware           │ │  │
  │  │  │  (registro, temporización)       │ │  │
  │  │  │                                  │ │  │
  │  │  │  get_weather(), get_date(), ...  │ │  │
@@ -100,9 +100,9 @@ else:
 
 @tool
 def get_weather(
-    city: Annotated[str, Field(description="La ciudad para consultar el clima.")],
+    city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> dict:
-    """Devuelve datos del clima para una ciudad dada, un diccionario con temperatura y descripción."""
+    """Devuelve datos del clima para una ciudad dada, con temperatura y descripción."""
     logger.info(f"Obteniendo clima para {city}")
     if random.random() < 0.05:
         return {"temperature": 22, "description": "Soleado"}
@@ -112,12 +112,12 @@ def get_weather(
 
 @tool
 def get_current_date() -> str:
-    """Obtiene la fecha actual del sistema y la devuelve como texto en formato AAAA-MM-DD."""
+    """Obtiene la fecha actual del sistema en texto con formato YYYY-MM-DD."""
     logger.info("Obteniendo fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 
 
-# ---- Middleware basado en funciones ----
+# ---- Function-based middleware ----
 
 
 async def timing_agent_middleware(
@@ -126,38 +126,38 @@ async def timing_agent_middleware(
 ) -> None:
     """Middleware de agente que registra el tiempo de ejecución."""
     start = time.perf_counter()
-    logger.info("[⏲️ Temporización][ Middleware de Agente] Iniciando ejecución del agente")
+    logger.info("[⏲️ Temporización][ Agent Middleware] Iniciando ejecución del agente")
 
     await call_next()
 
     elapsed = time.perf_counter() - start
-    logger.info(f"[⏲️ Temporización][ Middleware de Agente] Ejecución completada en {elapsed:.2f}s")
+    logger.info(f"[⏲️ Temporización][ Agent Middleware] Ejecución completada en {elapsed:.2f}s")
 
 
 async def logging_function_middleware(
     context: FunctionInvocationContext,
     call_next: Callable[[], Awaitable[None]],
 ) -> None:
-    """Middleware de función que registra las llamadas y resultados de funciones."""
+    """Middleware de función que registra llamadas y resultados."""
     logger.info(
-        f"[🪵 Registro][ Middleware de Función] Llamando a {context.function.name} con args: {context.arguments}"
+        f"[🪵 Registro][ Function Middleware] Llamando a {context.function.name} con args: {context.arguments}"
     )
 
     await call_next()
 
-    logger.info(f"[🪵 Registro][ Middleware de Función] {context.function.name} devolvió: {context.result}")
+    logger.info(f"[🪵 Registro][ Function Middleware] {context.function.name} devolvió: {context.result}")
 
 
 async def logging_chat_middleware(
     context: ChatContext,
     call_next: Callable[[], Awaitable[None]],
 ) -> None:
-    """Middleware de chat que registra las interacciones con la IA."""
-    logger.info(f"[💬 Registro][ Middleware de Chat] Enviando {len(context.messages)} mensajes a la IA")
+    """Middleware de chat que registra interacciones con la IA."""
+    logger.info(f"[💬 Registro][ Chat Middleware] Enviando {len(context.messages)} mensajes a la IA")
 
     await call_next()
 
-    logger.info("[💬 Registro][ Middleware de Chat] Respuesta de la IA recibida")
+    logger.info("[💬 Registro][ Chat Middleware] Respuesta de la IA recibida")
 
 
 # ---- Middleware basado en clases ----
@@ -175,12 +175,12 @@ class BlockingAgentMiddleware(AgentMiddleware):
         context: AgentContext,
         call_next: Callable[[], Awaitable[None]],
     ) -> None:
-        """Verifica los mensajes en busca de contenido bloqueado y termina si lo encuentra."""
+        """Verifica mensajes con contenido bloqueado y termina si lo encuentra."""
         last_message = context.messages[-1] if context.messages else None
         if last_message and last_message.text:
             for word in self.blocked_words:
                 if word.lower() in last_message.text.lower():
-                    logger.warning(f"[❌ Bloqueo][ Middleware de Agente] Solicitud bloqueada: contiene '{word}'")
+                    logger.warning(f"[❌ Bloqueo][ Agent Middleware] Solicitud bloqueada: contiene '{word}'")
                     context.terminate = True
                     context.result = AgentResponse(
                         messages=[
@@ -195,7 +195,7 @@ class BlockingAgentMiddleware(AgentMiddleware):
 
 
 class TimingFunctionMiddleware(FunctionMiddleware):
-    """Middleware de función que mide el tiempo de ejecución de cada llamada a función."""
+    """Middleware de función que mide el tiempo de ejecución de cada llamada."""
 
     async def process(
         self,
@@ -204,16 +204,16 @@ class TimingFunctionMiddleware(FunctionMiddleware):
     ) -> None:
         """Mide el tiempo de ejecución de la función y registra la duración."""
         start = time.perf_counter()
-        logger.info(f"[⌚️ Temporización][ Middleware de Función] Iniciando {context.function.name}")
+        logger.info(f"[⌚️ Temporización][ Function Middleware] Iniciando {context.function.name}")
 
         await call_next()
 
         elapsed = time.perf_counter() - start
-        logger.info(f"[⌚️ Temporización][ Middleware de Función] {context.function.name} tardó {elapsed:.4f}s")
+        logger.info(f"[⌚️ Temporización][ Function Middleware] {context.function.name} tardó {elapsed:.4f}s")
 
 
 class MessageCountChatMiddleware(ChatMiddleware):
-    """Middleware de chat que cuenta el número total de mensajes enviados a la IA."""
+    """Middleware de chat que cuenta el total de mensajes enviados a la IA."""
 
     def __init__(self) -> None:
         """Inicializa el contador de mensajes."""
@@ -227,14 +227,14 @@ class MessageCountChatMiddleware(ChatMiddleware):
         """Cuenta los mensajes y registra el total acumulado."""
         self.total_messages += len(context.messages)
         logger.info(
-            "[🔢 Conteo][ Middleware de Chat] Mensajes en esta solicitud: %s, total hasta ahora: %s",
+            "[🔢 Conteo][ Chat Middleware] Mensajes en esta solicitud: %s, total hasta ahora: %s",
             len(context.messages),
             self.total_messages,
         )
 
         await call_next()
 
-        logger.info("[🔢 Conteo][ Middleware de Chat] Respuesta de chat recibida")
+        logger.info("[🔢 Conteo][ Chat Middleware] Respuesta de chat recibida")
 
 
 # ---- Configuración del agente ----
@@ -250,7 +250,6 @@ agent = Agent(
     instructions=(
         "Ayudas a la gente a planificar su fin de semana. "
         "Usa las herramientas disponibles para consultar el clima y la fecha. "
-        "Responde en español."
     ),
     tools=[get_weather, get_current_date],
     middleware=[
