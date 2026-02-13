@@ -8,7 +8,7 @@ from typing import cast
 
 from agent_framework import (
     AgentRunUpdateEvent,
-    ChatAgent,
+    Agent,
     ChatMessage,
     MagenticBuilder,
     MagenticOrchestratorEvent,
@@ -51,8 +51,8 @@ else:
 console = Console()
 
 # Create the agents
-local_agent = ChatAgent(
-    chat_client=client,
+local_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can suggest authentic and interesting local activities "
         "or places to visit for a user and can utilize any context information provided."
@@ -61,8 +61,8 @@ local_agent = ChatAgent(
     description="A local assistant that can suggest local activities or places to visit.",
 )
 
-language_agent = ChatAgent(
-    chat_client=client,
+language_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can review travel plans, providing feedback on important/critical "
         "tips about how best to address language or communication challenges for the given destination. "
@@ -72,8 +72,8 @@ language_agent = ChatAgent(
     description="A helpful assistant that can provide language tips for a given destination.",
 )
 
-travel_summary_agent = ChatAgent(
-    chat_client=client,
+travel_summary_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can take in all of the suggestions and advice from the other agents "
         "and provide a detailed final travel plan. You must ensure that the final plan is integrated and complete. "
@@ -85,8 +85,8 @@ travel_summary_agent = ChatAgent(
 )
 
 # Create a manager agent for orchestration
-manager_agent = ChatAgent(
-    chat_client=client,
+manager_agent = Agent(
+    client=client,
     instructions="You coordinate a team to complete travel planning tasks efficiently.",
     name="magentic_manager",
     description="Orchestrator that coordinates the travel planning workflow",

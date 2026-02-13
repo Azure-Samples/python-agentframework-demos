@@ -3,11 +3,10 @@ import logging
 import os
 import random
 import uuid
-from collections.abc import MutableSequence
-from typing import Annotated, Any
+from typing import Annotated
 
-from agent_framework import ChatAgent, ChatMessage, Context, tool
-from agent_framework.mem0 import Mem0Provider
+from agent_framework import Agent, tool
+from agent_framework.mem0 import Mem0ContextProvider
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -49,7 +48,7 @@ else:
 
 # NOTE: approval_mode="never_require" is for sample brevity.
 # Use "always_require" in production.
-@tool(approval_mode="never_require")
+@tool
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> str:
@@ -59,53 +58,12 @@ def get_weather(
     return f"The weather in {city} is {conditions[random.randint(0, 3)]} with a high of {random.randint(10, 30)}°C."
 
 
-class Mem0OSSProvider(Mem0Provider):
-    """Mem0Provider subclass that fixes search for Mem0 OSS (AsyncMemory).
-
-    The base Mem0Provider passes user_id/agent_id inside a 'filters' dict,
-    which works for the Mem0 Platform client but not for AsyncMemory (OSS),
-    which expects them as direct keyword arguments.
-    """
-
-    async def invoking(self, messages: ChatMessage | MutableSequence[ChatMessage], **kwargs: Any) -> Context:
-        self._validate_filters()
-        messages_list = [messages] if isinstance(messages, ChatMessage) else list(messages)
-        input_text = "\n".join(msg.text for msg in messages_list if msg and msg.text and msg.text.strip())
-
-        if not input_text.strip():
-            return Context(messages=None)
-
-        # Pass user_id/agent_id as keyword args (Mem0 OSS API)
-        search_kwargs: dict[str, Any] = {"query": input_text}
-        if self.user_id:
-            search_kwargs["user_id"] = self.user_id
-        if self.agent_id:
-            search_kwargs["agent_id"] = self.agent_id
-
-        search_response = await self.mem0_client.search(**search_kwargs)
-
-        if isinstance(search_response, list):
-            memories = search_response
-        elif isinstance(search_response, dict) and "results" in search_response:
-            memories = search_response["results"]
-        else:
-            memories = [search_response]
-
-        line_separated_memories = "\n".join(memory.get("memory", "") for memory in memories)
-
-        return Context(
-            messages=[ChatMessage(role="user", text=f"{self.context_prompt}\n{line_separated_memories}")]
-            if line_separated_memories
-            else None
-        )
-
-
 async def main() -> None:
     """Demonstrate an agent with Mem0 OSS for long-term memory.
 
-    Unlike RedisProvider (which stores raw messages), Mem0 uses an LLM to
+    Unlike RedisContextProvider (which stores raw messages), Mem0 uses an LLM to
     extract and store distilled facts from conversations. When the agent
-    starts a new thread, Mem0 injects relevant memories as context.
+    starts a new session, Mem0 injects relevant memories as context.
 
     Mem0 OSS needs an LLM and embedder for memory extraction. This example
     uses Azure OpenAI when API_HOST=azure, otherwise falls back to OPENAI_API_KEY.
@@ -161,16 +119,16 @@ async def main() -> None:
 
     mem0_client = await AsyncMemory.from_config(mem0_config)
 
-    provider = Mem0OSSProvider(user_id=user_id, mem0_client=mem0_client)
+    provider = Mem0ContextProvider(source_id="mem0_memory", user_id=user_id, mem0_client=mem0_client)
 
-    agent = ChatAgent(
-        chat_client=client,
+    agent = Agent(
+        client=client,
         instructions=(
             "You are a helpful weather assistant. Personalize replies using provided context. "
             "Before answering, always check for stored context."
         ),
         tools=[get_weather],
-        context_provider=provider,
+        context_providers=[provider],
     )
 
     # Step 1: Teach the agent user preferences
@@ -179,12 +137,12 @@ async def main() -> None:
     response = await agent.run("Remember that my favorite city is Tokyo and I prefer Celsius.")
     print(f"[green]Agent:[/green] {response.text}")
 
-    # Step 2: Start a new thread — Mem0 should inject remembered facts
-    print("\n[dim]--- Step 2: New thread — recalling preferences ---[/dim]")
+    # Step 2: Start a new session — Mem0 should inject remembered facts
+    print("\n[dim]--- Step 2: New session — recalling preferences ---[/dim]")
     print("[blue]User:[/blue] What's my favorite city?")
     response = await agent.run("What's my favorite city?")
     print(f"[green]Agent:[/green] {response.text}")
-    print("[dim]Note: Mem0 extracted and stored facts, then injected them into the new thread.[/dim]")
+    print("[dim]Note: Mem0 extracted and stored facts, then injected them into the new session.[/dim]")
 
     # Step 3: Use a tool, demonstrating memory with tool outputs
     print("\n[dim]--- Step 3: Tool use with memory ---[/dim]")

@@ -6,7 +6,7 @@ from typing import cast
 
 from agent_framework import (
     AgentRunUpdateEvent,
-    ChatAgent,
+    Agent,
     ChatMessage,
     MagenticBuilder,
     MagenticOrchestratorEvent,
@@ -50,8 +50,8 @@ else:
 console = Console()
 
 # Crea los agentes
-agente_local = ChatAgent(
-    chat_client=client,
+agente_local = Agent(
+    client=client,
     instructions=(
         "Eres un asistente útil: puedes sugerir actividades locales auténticas e interesantes "
         "o lugares para visitar, y puedes usar cualquier información de contexto que te compartan."
@@ -60,8 +60,8 @@ agente_local = ChatAgent(
     description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
 )
 
-agente_idioma = ChatAgent(
-    chat_client=client,
+agente_idioma = Agent(
+    client=client,
     instructions=(
         "Eres un asistente útil: puedes revisar planes de viaje y dar feedback con tips importantes/críticos "
         "para manejar mejor desafíos de idioma o comunicación en el destino. "
@@ -71,8 +71,8 @@ agente_idioma = ChatAgent(
     description="Un asistente útil que puede proporcionar consejos de idioma para un destino dado.",
 )
 
-agente_resumen_viaje = ChatAgent(
-    chat_client=client,
+agente_resumen_viaje = Agent(
+    client=client,
     instructions=(
         "Eres un asistente útil: puedes tomar todas las sugerencias y consejos de los otros agentes "
         "y armar un plan de viaje final detallado. Asegúrate de que el plan quede integrado y completo. "
@@ -84,8 +84,8 @@ agente_resumen_viaje = ChatAgent(
 )
 
 # Crea un agente manager para la orquestación
-agente_gerente = ChatAgent(
-    chat_client=client,
+agente_gerente = Agent(
+    client=client,
     instructions="Coordinas un equipo para completar tareas de planificación de viaje de forma eficiente.",
     name="agente_gerente",
     description="Orquestador que coordina el flujo de trabajo de planificación de viajes",

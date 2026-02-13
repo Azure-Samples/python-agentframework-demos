@@ -4,10 +4,10 @@ import os
 import random
 import sqlite3
 import uuid
-from collections.abc import MutableMapping, Sequence
+from collections.abc import Sequence
 from typing import Annotated, Any
 
-from agent_framework import AgentThread, ChatAgent, ChatMessage, ChatMessageStoreProtocol
+from agent_framework import Agent, BaseHistoryProvider, Message, tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -46,70 +46,55 @@ else:
     )
 
 
-class SQLiteChatMessageStore(ChatMessageStoreProtocol):
-    """A custom ChatMessageStore backed by SQLite.
+class SQLiteHistoryProvider(BaseHistoryProvider):
+    """A custom history provider backed by SQLite.
 
-    Implements the ChatMessageStoreProtocol to persist chat messages
+    Implements the BaseHistoryProvider to persist chat messages
     in a local SQLite database — useful when you want file-based
     persistence without an external service like Redis.
     """
 
-    def __init__(self, db_path: str, thread_id: str | None = None):
+    def __init__(self, db_path: str):
+        super().__init__("sqlite-history")
         self.db_path = db_path
-        self.thread_id = thread_id or str(uuid.uuid4())
         self._conn = sqlite3.connect(self.db_path)
         self._conn.execute(
             """
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                thread_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
                 message_json TEXT NOT NULL
             )
             """
         )
         self._conn.commit()
 
-    async def add_messages(self, messages: Sequence[ChatMessage]) -> None:
-        """Add messages to the SQLite database."""
+    async def get_messages(self, session_id: str | None, **kwargs: Any) -> list[Message]:
+        """Retrieve all messages for this session from SQLite."""
+        if session_id is None:
+            return []
+        cursor = self._conn.execute(
+            "SELECT message_json FROM messages WHERE session_id = ? ORDER BY id",
+            (session_id,),
+        )
+        return [Message.from_json(row[0]) for row in cursor.fetchall()]
+
+    async def save_messages(self, session_id: str | None, messages: Sequence[Message], **kwargs: Any) -> None:
+        """Save messages to the SQLite database."""
+        if session_id is None:
+            return
         self._conn.executemany(
-            "INSERT INTO messages (thread_id, message_json) VALUES (?, ?)",
-            [(self.thread_id, message.to_json()) for message in messages],
+            "INSERT INTO messages (session_id, message_json) VALUES (?, ?)",
+            [(session_id, message.to_json()) for message in messages],
         )
         self._conn.commit()
-
-    async def list_messages(self) -> list[ChatMessage]:
-        """Retrieve all messages for this thread from SQLite."""
-        cursor = self._conn.execute(
-            "SELECT message_json FROM messages WHERE thread_id = ? ORDER BY id",
-            (self.thread_id,),
-        )
-        return [ChatMessage.from_json(row[0]) for row in cursor.fetchall()]
-
-    async def serialize(self, **kwargs: Any) -> dict[str, Any]:
-        """Serialize the store state for persistence."""
-        return {"db_path": self.db_path, "thread_id": self.thread_id}
-
-    @classmethod
-    async def deserialize(
-        cls, serialized_store_state: MutableMapping[str, Any], **kwargs: Any
-    ) -> "SQLiteChatMessageStore":
-        """Reconstruct a store from serialized state."""
-        return cls(
-            db_path=serialized_store_state["db_path"],
-            thread_id=serialized_store_state["thread_id"],
-        )
-
-    async def update_from_state(self, serialized_store_state: MutableMapping[str, Any], **kwargs: Any) -> None:
-        """Update store from serialized state."""
-        if serialized_store_state:
-            self.db_path = serialized_store_state["db_path"]
-            self.thread_id = serialized_store_state["thread_id"]
 
     def close(self) -> None:
         """Close the SQLite connection."""
         self._conn.close()
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> str:
@@ -120,52 +105,56 @@ def get_weather(
 
 
 async def main() -> None:
-    """Demonstrate a SQLite-backed thread that persists conversation history to a local file."""
+    """Demonstrate a SQLite-backed session that persists conversation history to a local file."""
     db_path = "chat_history.sqlite3"
-    thread_id = str(uuid.uuid4())
+    session_id = str(uuid.uuid4())
 
-    # Phase 1: Start a conversation with a SQLite-backed thread
-    print("\n[bold]=== Persistent SQLite Thread ===[/bold]")
+    # Phase 1: Start a conversation with a SQLite-backed history provider
+    print("\n[bold]=== Persistent SQLite Session ===[/bold]")
     print("[dim]--- Phase 1: Starting conversation ---[/dim]")
 
-    store = SQLiteChatMessageStore(db_path=db_path, thread_id=thread_id)
-    thread = AgentThread(message_store=store)
+    sqlite_provider = SQLiteHistoryProvider(db_path=db_path)
 
-    agent = ChatAgent(
-        chat_client=client,
+    agent = Agent(
+        client=client,
         instructions="You are a helpful weather agent.",
         tools=[get_weather],
+        context_providers=[sqlite_provider],
     )
 
+    session = agent.create_session(session_id=session_id)
+
     print("[blue]User:[/blue] What's the weather like in Tokyo?")
-    response = await agent.run("What's the weather like in Tokyo?", thread=thread)
+    response = await agent.run("What's the weather like in Tokyo?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
     print("\n[blue]User:[/blue] How about Paris?")
-    response = await agent.run("How about Paris?", thread=thread)
+    response = await agent.run("How about Paris?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
-    messages = await store.list_messages()
+    messages = await sqlite_provider.get_messages(session_id)
     print(f"[dim]Messages stored in SQLite: {len(messages)}[/dim]")
-    store.close()
+    sqlite_provider.close()
 
-    # Phase 2: Simulate an application restart — reconnect to the same thread ID in SQLite
+    # Phase 2: Simulate an application restart — reconnect to the same session ID in SQLite
     print("\n[dim]--- Phase 2: Resuming after 'restart' ---[/dim]")
-    store2 = SQLiteChatMessageStore(db_path=db_path, thread_id=thread_id)
-    thread2 = AgentThread(message_store=store2)
+    sqlite_provider2 = SQLiteHistoryProvider(db_path=db_path)
 
-    agent2 = ChatAgent(
-        chat_client=client,
+    agent2 = Agent(
+        client=client,
         instructions="You are a helpful weather agent.",
         tools=[get_weather],
+        context_providers=[sqlite_provider2],
     )
 
+    session2 = agent2.create_session(session_id=session_id)
+
     print("[blue]User:[/blue] Which of the cities I asked about had better weather?")
-    response = await agent2.run("Which of the cities I asked about had better weather?", thread=thread2)
+    response = await agent2.run("Which of the cities I asked about had better weather?", session=session2)
     print(f"[green]Agent:[/green] {response.text}")
     print("[dim]Note: The agent remembered the conversation from Phase 1 via SQLite persistence.[/dim]")
 
-    store2.close()
+    sqlite_provider2.close()
 
     if async_credential:
         await async_credential.close()

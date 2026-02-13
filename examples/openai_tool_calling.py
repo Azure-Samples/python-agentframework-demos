@@ -29,6 +29,7 @@ else:
 
 def lookup_weather(city_name: str | None = None, zip_code: str | None = None) -> dict:
     """Lookup the weather for a given city name or zip code."""
+    print(f"Looking up weather for {city_name or zip_code}...\n")
     return {
         "city_name": city_name,
         "zip_code": zip_code,
@@ -64,7 +65,7 @@ tools = [
 
 messages = [
     {"role": "system", "content": "You are a weather chatbot."},
-    {"role": "user", "content": "is it sunny in berkeley CA?"},
+    {"role": "user", "content": "is it sunny in LA, CA?"},
 ]
 response = client.chat.completions.create(
     model=MODEL_NAME,
@@ -73,17 +74,22 @@ response = client.chat.completions.create(
     tool_choice="auto",
 )
 
-print(f"Response from {MODEL_NAME} on {API_HOST}: \n")
 
 # Now actually call the function as indicated
 if response.choices[0].message.tool_calls:
     tool_call = response.choices[0].message.tool_calls[0]
     function_name = tool_call.function.name
-    arguments = json.loads(tool_call.function.arguments)
+    function_arguments = json.loads(tool_call.function.arguments)
+    print(function_name)
+    print(function_arguments)
 
     if function_name == "lookup_weather":
         messages.append(response.choices[0].message)
-        result = lookup_weather(**arguments)
+        result = lookup_weather(**function_arguments)
         messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result)})
         response = client.chat.completions.create(model=MODEL_NAME, messages=messages, tools=tools)
+        print(f"Response from {MODEL_NAME} on {API_HOST}:")
         print(response.choices[0].message.content)
+
+else:
+    print(response.choices[0].message.content)

@@ -48,15 +48,16 @@ from typing import Annotated
 
 from agent_framework import (
     AgentMiddleware,
-    AgentRunContext,
-    AgentRunResponse,
-    ChatAgent,
+    AgentContext,
+    AgentResponse,
+    Agent,
+    tool,
     ChatContext,
-    ChatMessage,
+    Message,
     ChatMiddleware,
     FunctionInvocationContext,
     FunctionMiddleware,
-    Role,
+
 )
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
@@ -97,6 +98,7 @@ else:
 # ---- Herramientas ----
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="La ciudad para consultar el clima.")],
 ) -> dict:
@@ -108,6 +110,7 @@ def get_weather(
         return {"temperature": 15, "description": "Lluvioso"}
 
 
+@tool
 def get_current_date() -> str:
     """Obtiene la fecha actual del sistema y la devuelve como texto en formato AAAA-MM-DD."""
     logger.info("Obteniendo fecha actual")
@@ -118,14 +121,14 @@ def get_current_date() -> str:
 
 
 async def timing_agent_middleware(
-    context: AgentRunContext,
-    next: Callable[[AgentRunContext], Awaitable[None]],
+    context: AgentContext,
+    call_next: Callable[[], Awaitable[None]],
 ) -> None:
     """Middleware de agente que registra el tiempo de ejecución."""
     start = time.perf_counter()
     logger.info("[⏲️ Temporización][ Middleware de Agente] Iniciando ejecución del agente")
 
-    await next(context)
+    await call_next()
 
     elapsed = time.perf_counter() - start
     logger.info(f"[⏲️ Temporización][ Middleware de Agente] Ejecución completada en {elapsed:.2f}s")
@@ -133,26 +136,26 @@ async def timing_agent_middleware(
 
 async def logging_function_middleware(
     context: FunctionInvocationContext,
-    next: Callable[[FunctionInvocationContext], Awaitable[None]],
+    call_next: Callable[[], Awaitable[None]],
 ) -> None:
     """Middleware de función que registra las llamadas y resultados de funciones."""
     logger.info(
         f"[🪵 Registro][ Middleware de Función] Llamando a {context.function.name} con args: {context.arguments}"
     )
 
-    await next(context)
+    await call_next()
 
     logger.info(f"[🪵 Registro][ Middleware de Función] {context.function.name} devolvió: {context.result}")
 
 
 async def logging_chat_middleware(
     context: ChatContext,
-    next: Callable[[ChatContext], Awaitable[None]],
+    call_next: Callable[[], Awaitable[None]],
 ) -> None:
     """Middleware de chat que registra las interacciones con la IA."""
     logger.info(f"[💬 Registro][ Middleware de Chat] Enviando {len(context.messages)} mensajes a la IA")
 
-    await next(context)
+    await call_next()
 
     logger.info("[💬 Registro][ Middleware de Chat] Respuesta de la IA recibida")
 
@@ -169,8 +172,8 @@ class BlockingAgentMiddleware(AgentMiddleware):
 
     async def process(
         self,
-        context: AgentRunContext,
-        next: Callable[[AgentRunContext], Awaitable[None]],
+        context: AgentContext,
+        call_next: Callable[[], Awaitable[None]],
     ) -> None:
         """Verifica los mensajes en busca de contenido bloqueado y termina si lo encuentra."""
         last_message = context.messages[-1] if context.messages else None
@@ -179,16 +182,16 @@ class BlockingAgentMiddleware(AgentMiddleware):
                 if word.lower() in last_message.text.lower():
                     logger.warning(f"[❌ Bloqueo][ Middleware de Agente] Solicitud bloqueada: contiene '{word}'")
                     context.terminate = True
-                    context.result = AgentRunResponse(
+                    context.result = AgentResponse(
                         messages=[
-                            ChatMessage(
-                                role=Role.ASSISTANT, text=f"Lo siento, no puedo procesar solicitudes sobre '{word}'."
+                            Message(
+                                role="assistant", text=f"Lo siento, no puedo procesar solicitudes sobre '{word}'."
                             )
                         ]
                     )
                     return
 
-        await next(context)
+        await call_next()
 
 
 class TimingFunctionMiddleware(FunctionMiddleware):
@@ -197,13 +200,13 @@ class TimingFunctionMiddleware(FunctionMiddleware):
     async def process(
         self,
         context: FunctionInvocationContext,
-        next: Callable[[FunctionInvocationContext], Awaitable[None]],
+        call_next: Callable[[], Awaitable[None]],
     ) -> None:
         """Mide el tiempo de ejecución de la función y registra la duración."""
         start = time.perf_counter()
         logger.info(f"[⌚️ Temporización][ Middleware de Función] Iniciando {context.function.name}")
 
-        await next(context)
+        await call_next()
 
         elapsed = time.perf_counter() - start
         logger.info(f"[⌚️ Temporización][ Middleware de Función] {context.function.name} tardó {elapsed:.4f}s")
@@ -219,7 +222,7 @@ class MessageCountChatMiddleware(ChatMiddleware):
     async def process(
         self,
         context: ChatContext,
-        next: Callable[[ChatContext], Awaitable[None]],
+        call_next: Callable[[], Awaitable[None]],
     ) -> None:
         """Cuenta los mensajes y registra el total acumulado."""
         self.total_messages += len(context.messages)
@@ -229,7 +232,7 @@ class MessageCountChatMiddleware(ChatMiddleware):
             self.total_messages,
         )
 
-        await next(context)
+        await call_next()
 
         logger.info("[🔢 Conteo][ Middleware de Chat] Respuesta de chat recibida")
 
@@ -241,9 +244,9 @@ blocking_middleware = BlockingAgentMiddleware(blocked_words=["nuclear", "clasifi
 timing_function_middleware = TimingFunctionMiddleware()
 message_count_middleware = MessageCountChatMiddleware()
 
-agent = ChatAgent(
+agent = Agent(
     name="middleware-demo",
-    chat_client=client,
+    client=client,
     instructions=(
         "Ayudas a la gente a planificar su fin de semana. "
         "Usa las herramientas disponibles para consultar el clima y la fecha. "
@@ -278,12 +281,12 @@ async def main() -> None:
     logger.info("\n=== Solicitud con Middleware a Nivel de Ejecución ===")
 
     async def extra_agent_middleware(
-        context: AgentRunContext,
-        next: Callable[[AgentRunContext], Awaitable[None]],
+        context: AgentContext,
+        call_next: Callable[[], Awaitable[None]],
     ) -> None:
         """Middleware a nivel de ejecución que solo aplica a esta ejecución específica."""
         logger.info("[🏃🏽‍♀️ Middleware de Ejecución] Este middleware solo aplica a esta ejecución")
-        await next(context)
+        await call_next()
         logger.info("[🏃🏽‍♀️ Middleware de Ejecución] Ejecución completada")
 
     response = await agent.run(

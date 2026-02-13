@@ -11,7 +11,7 @@ from agent_framework import (
     AgentExecutorResponse,
     AgentResponse,
     AgentRunUpdateEvent,
-    ChatAgent,
+    Agent,
     ChatMessage,
     Content,
     Executor,
@@ -77,7 +77,7 @@ Prerequisites:
 
 
 # NOTE: approval_mode="never_require" is for sample brevity.
-@tool(approval_mode="never_require")
+@tool
 def fetch_product_brief(
     product_name: Annotated[str, Field(description="Product name to look up.")],
 ) -> str:
@@ -95,7 +95,7 @@ def fetch_product_brief(
 
 
 # NOTE: approval_mode="never_require" is for sample brevity.
-@tool(approval_mode="never_require")
+@tool
 def get_brand_voice_profile(
     voice_name: Annotated[str, Field(description="Brand or campaign voice to emulate.")],
 ) -> str:
@@ -196,10 +196,10 @@ class Coordinator(Executor):
         )
 
 
-def create_writer_agent() -> ChatAgent:
+def create_writer_agent() -> Agent:
     """Creates a writer agent with tools."""
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="writer_agent",
         instructions=(
             "You are a marketing writer. Call the available tools before drafting copy so you are precise. "
@@ -211,10 +211,10 @@ def create_writer_agent() -> ChatAgent:
     )
 
 
-def create_final_editor_agent() -> ChatAgent:
+def create_final_editor_agent() -> Agent:
     """Creates a final editor agent."""
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="final_editor_agent",
         instructions=(
             "You are an editor who polishes marketing copy after human approval. "

@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 from typing import Annotated
 
-from agent_framework import ChatAgent
+from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -45,6 +45,7 @@ else:
     )
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="La ciudad para consultar el clima.")],
 ) -> dict:
@@ -62,6 +63,7 @@ def get_weather(
         }
 
 
+@tool
 def get_activities(
     city: Annotated[str, Field(description="La ciudad para consultar actividades.")],
     date: Annotated[str, Field(description="La fecha (YYYY-MM-DD) para consultar actividades.")],
@@ -75,15 +77,16 @@ def get_activities(
     ]
 
 
+@tool
 def get_current_date() -> str:
     """Obtiene la fecha actual del sistema en formato YYYY-MM-DD."""
     logger.info("Obteniendo la fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 
 
-agent = ChatAgent(
+agent = Agent(
     name="weekend-planner",
-    chat_client=client,
+    client=client,
     instructions=(
         "Ayudas a la gente a planear su fin de semana y elegir las mejores actividades según el clima. "
         "Si una actividad sería desagradable con el clima previsto, no la sugieras. "

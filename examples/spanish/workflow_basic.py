@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from agent_framework import AgentExecutorResponse, ChatAgent, WorkflowBuilder
+from agent_framework import AgentExecutorResponse, Agent, WorkflowBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -69,8 +69,8 @@ def esta_aprobado(message: Any) -> bool:
 
 # Crea el agente Escritor: genera contenido
 def crear_escritor():
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="Escritor",
         instructions=(
             "Eres un excelente escritor de contenido. "
@@ -82,8 +82,8 @@ def crear_escritor():
 
 # Crea el agente Revisor: evalúa y da retroalimentación estructurada
 def crear_revisor():
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="Revisor",
         instructions=(
             "Eres un experto revisor de contenido. "
@@ -103,8 +103,8 @@ def crear_revisor():
 
 # Crea el agente Editor: mejora el contenido según la retroalimentación
 def crear_editor():
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="Editor",
         instructions=(
             "Eres un editor habilidoso. "
@@ -117,8 +117,8 @@ def crear_editor():
 
 # Crea el agente Publicador: formatea el contenido para publicación
 def crear_publicador():
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="Publicador",
         instructions=(
             "Eres un agente de publicación. "
@@ -130,8 +130,8 @@ def crear_publicador():
 
 # Crea el agente Resumidor: arma el informe final de publicación
 def crear_resumidor():
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="Resumidor",
         instructions=(
             "Eres un agente resumidor. "

@@ -5,9 +5,9 @@ import random
 import uuid
 from typing import Annotated
 
-from agent_framework import ChatAgent, tool
+from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
-from agent_framework.redis import RedisProvider
+from agent_framework.redis import RedisContextProvider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
@@ -48,7 +48,7 @@ else:
 
 # NOTE: approval_mode="never_require" is for sample brevity.
 # Use "always_require" in production.
-@tool(approval_mode="never_require")
+@tool
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> str:
@@ -59,9 +59,9 @@ def get_weather(
 
 
 async def example_agent_with_memory() -> None:
-    """Demonstrate an agent with Redis-backed long-term memory via RedisProvider.
+    """Demonstrate an agent with Redis-backed long-term memory via RedisContextProvider.
 
-    The RedisProvider stores conversational context in Redis and retrieves it
+    The RedisContextProvider stores conversational context in Redis and retrieves it
     using full-text search (BM25), or hybrid search (BM25 + vector similarity)
     when an embedding model is configured.
 
@@ -71,10 +71,11 @@ async def example_agent_with_memory() -> None:
 
     user_id = str(uuid.uuid4())
 
-    # RedisProvider supports hybrid search (full-text + vector) when a vectorizer is configured.
+    # RedisContextProvider supports hybrid search (full-text + vector) when a vectorizer is configured.
     # However, there is currently a version mismatch between agent-framework-redis and redisvl
     # (the HybridQuery API changed), so this example uses text-only search for now.
-    memory_provider = RedisProvider(
+    memory_provider = RedisContextProvider(
+        source_id="redis_memory",
         redis_url=REDIS_URL,
         index_name="agent_memory_demo",
         prefix="memory_demo",
@@ -84,14 +85,14 @@ async def example_agent_with_memory() -> None:
         overwrite_index=True,
     )
 
-    agent = ChatAgent(
-        chat_client=client,
+    agent = Agent(
+        client=client,
         instructions=(
             "You are a helpful weather assistant. Personalize replies using provided context. "
             "Before answering, always check for stored context."
         ),
         tools=[get_weather],
-        context_provider=memory_provider,
+        context_providers=[memory_provider],
     )
 
     # Step 1: Teach the agent a user preference

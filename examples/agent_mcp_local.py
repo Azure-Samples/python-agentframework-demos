@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 
-from agent_framework import ChatAgent, MCPStreamableHTTPTool
+from agent_framework import Agent, MCPStreamableHTTPTool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -47,8 +47,8 @@ async def main() -> None:
     """Run an agent connected to a local MCP server for expense logging."""
     async with (
         MCPStreamableHTTPTool(name="Expenses MCP Server", url=MCP_SERVER_URL) as mcp_server,
-        ChatAgent(
-            chat_client=client,
+        Agent(
+            client=client,
             instructions=(
                 "You help users with tasks using the available tools. "
                 f"Today's date is {datetime.now().strftime('%Y-%m-%d')}."

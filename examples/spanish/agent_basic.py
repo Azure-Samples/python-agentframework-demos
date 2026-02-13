@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from agent_framework import ChatAgent
+from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -32,8 +32,8 @@ else:
     )
 
 
-agent = ChatAgent(
-    chat_client=client, instructions="Eres un agente informativo. Responde a las preguntas con buena onda."
+agent = Agent(
+    client=client, instructions="Eres un agente informativo. Responde a las preguntas con buena onda."
 )
 
 

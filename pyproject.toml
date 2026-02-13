@@ -13,10 +13,10 @@ dependencies = [
     "aiohttp",
     "faker",
     "fastmcp",
-    "agent-framework-core @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/core",
-    "agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/devui",
-    "agent-framework-redis @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/redis",
-    "agent-framework-mem0 @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/mem0",
+    "agent-framework-core @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/core",
+    "agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/devui",
+    "agent-framework-redis @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/redis",
+    "agent-framework-mem0 @ git+https://github.com/microsoft/agent-framework.git@65e77e52af5d99058be89823333f2f60afc07ab9#subdirectory=python/packages/mem0",
 ]
 
 [tool.ruff]

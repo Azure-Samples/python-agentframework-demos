@@ -5,9 +5,9 @@ import random
 import uuid
 from typing import Annotated
 
-from agent_framework import AgentThread, ChatAgent
+from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
-from agent_framework.redis import RedisChatMessageStore
+from agent_framework.redis import RedisHistoryProvider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
@@ -46,6 +46,7 @@ else:
     )
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> str:
@@ -55,63 +56,60 @@ def get_weather(
     return f"The weather in {city} is {conditions[random.randint(0, 3)]} with a high of {random.randint(10, 30)}°C."
 
 
-async def example_persistent_thread() -> None:
-    """A Redis-backed thread persists conversation history across application restarts."""
-    print("\n[bold]=== Persistent Redis Thread ===[/bold]")
+async def example_persistent_session() -> None:
+    """A Redis-backed session persists conversation history across application restarts."""
+    print("\n[bold]=== Persistent Redis Session ===[/bold]")
 
-    thread_id = str(uuid.uuid4())
+    session_id = str(uuid.uuid4())
 
-    # Phase 1: Start a conversation with a Redis-backed thread
+    # Phase 1: Start a conversation with a Redis-backed history provider
     print("[dim]--- Phase 1: Starting conversation ---[/dim]")
-    store = RedisChatMessageStore(redis_url=REDIS_URL, thread_id=thread_id)
-    thread = AgentThread(message_store=store)
+    redis_provider = RedisHistoryProvider(source_id="redis_chat", redis_url=REDIS_URL)
 
-    agent = ChatAgent(
-        chat_client=client,
+    agent = Agent(
+        client=client,
         instructions="You are a helpful weather agent.",
         tools=[get_weather],
+        context_providers=[redis_provider],
     )
 
+    session = agent.create_session(session_id=session_id)
+
     print("[blue]User:[/blue] What's the weather like in Tokyo?")
-    response = await agent.run("What's the weather like in Tokyo?", thread=thread)
+    response = await agent.run("What's the weather like in Tokyo?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
     print("\n[blue]User:[/blue] How about Paris?")
-    response = await agent.run("How about Paris?", thread=thread)
+    response = await agent.run("How about Paris?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
-    messages = await store.list_messages()
-    print(f"[dim]Messages stored in Redis: {len(messages)}[/dim]")
-    await store.aclose()
-
-    # Phase 2: Simulate an application restart — reconnect to the same thread ID in Redis
+    # Phase 2: Simulate an application restart — reconnect using the same session ID in Redis
     print("\n[dim]--- Phase 2: Resuming after 'restart' ---[/dim]")
-    store2 = RedisChatMessageStore(redis_url=REDIS_URL, thread_id=thread_id)
-    thread2 = AgentThread(message_store=store2)
+    redis_provider2 = RedisHistoryProvider(source_id="redis_chat", redis_url=REDIS_URL)
 
-    agent2 = ChatAgent(
-        chat_client=client,
+    agent2 = Agent(
+        client=client,
         instructions="You are a helpful weather agent.",
         tools=[get_weather],
+        context_providers=[redis_provider2],
     )
 
+    session2 = agent2.create_session(session_id=session_id)
+
     print("[blue]User:[/blue] Which of the cities I asked about had better weather?")
-    response = await agent2.run("Which of the cities I asked about had better weather?", thread=thread2)
+    response = await agent2.run("Which of the cities I asked about had better weather?", session=session2)
     print(f"[green]Agent:[/green] {response.text}")
     print("[dim]Note: The agent remembered the conversation from Phase 1 via Redis persistence.[/dim]")
 
-    # Cleanup
-    await store2.aclose()
-
 
 async def main() -> None:
-    """Run all Redis thread examples to demonstrate persistent storage patterns."""
+    """Run all Redis session examples to demonstrate persistent storage patterns."""
     # Verify Redis connectivity
-    test_store = RedisChatMessageStore(redis_url=REDIS_URL)
+    import redis as redis_client
+
+    r = redis_client.from_url(REDIS_URL)
     try:
-        connection_ok = await test_store.ping()
-        if not connection_ok:
-            raise ConnectionError("Redis ping failed")
+        r.ping()
     except Exception as e:
         print(f"[red]Cannot connect to Redis at {REDIS_URL}: {e}[/red]")
         print(
@@ -120,11 +118,11 @@ async def main() -> None:
         )
         return
     finally:
-        await test_store.aclose()
+        r.close()
 
     print("[dim]Redis connection verified.[/dim]")
 
-    await example_persistent_thread()
+    await example_persistent_session()
 
     if async_credential:
         await async_credential.close()

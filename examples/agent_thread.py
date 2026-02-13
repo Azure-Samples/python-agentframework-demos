@@ -4,7 +4,7 @@ import os
 import random
 from typing import Annotated
 
-from agent_framework import AgentThread, ChatAgent, ChatMessageStore
+from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -41,6 +41,7 @@ else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
 ) -> str:
@@ -50,16 +51,16 @@ def get_weather(
     return f"The weather in {city} is {conditions[random.randint(0, 3)]} with a high of {random.randint(10, 30)}°C."
 
 
-agent = ChatAgent(
-    chat_client=client,
+agent = Agent(
+    client=client,
     instructions="You are a helpful weather agent.",
     tools=[get_weather],
 )
 
 
-async def example_without_thread() -> None:
-    """Without a thread, each call is independent — the agent has no memory of prior messages."""
-    print("\n[bold]=== Without Thread (No Memory) ===[/bold]")
+async def example_without_session() -> None:
+    """Without a session, each call is independent — the agent has no memory of prior messages."""
+    print("\n[bold]=== Without Session (No Memory) ===[/bold]")
 
     response = await agent.run("What's the weather like in Seattle?")
     print(f"[blue]User:[/blue] What's the weather like in Seattle?")
@@ -68,70 +69,57 @@ async def example_without_thread() -> None:
     response = await agent.run("What was the last city I asked about?")
     print(f"\n[blue]User:[/blue] What was the last city I asked about?")
     print(f"[green]Agent:[/green] {response.text}")
-    print("[dim]Note: Each call creates a separate thread, so the agent doesn't remember previous context.[/dim]")
+    print("[dim]Note: Each call creates a separate session, so the agent doesn't remember previous context.[/dim]")
 
 
-async def example_with_thread() -> None:
-    """With a thread, the agent maintains context across multiple messages."""
-    print("\n[bold]=== With Thread (Persistent Memory) ===[/bold]")
+async def example_with_session() -> None:
+    """With a session, the agent maintains context across multiple messages."""
+    print("\n[bold]=== With Session (Persistent Memory) ===[/bold]")
 
-    thread = agent.get_new_thread()
+    session = agent.create_session()
 
     print(f"[blue]User:[/blue] What's the weather like in Tokyo?")
-    response = await agent.run("What's the weather like in Tokyo?", thread=thread)
+    response = await agent.run("What's the weather like in Tokyo?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
     print(f"\n[blue]User:[/blue] How about London?")
-    response = await agent.run("How about London?", thread=thread)
+    response = await agent.run("How about London?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
     print(f"\n[blue]User:[/blue] Which of those cities has better weather?")
-    response = await agent.run("Which of those cities has better weather?", thread=thread)
+    response = await agent.run("Which of those cities has better weather?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
-    print("[dim]Note: The agent remembers context from previous messages in the same thread.[/dim]")
+    print("[dim]Note: The agent remembers context from previous messages in the same session.[/dim]")
 
 
-async def example_thread_across_agents() -> None:
-    """A thread's message history can be carried over to a new agent instance."""
-    print("\n[bold]=== Thread Across Agent Instances ===[/bold]")
+async def example_session_across_agents() -> None:
+    """A session can be shared across different agent instances."""
+    print("\n[bold]=== Session Across Agent Instances ===[/bold]")
 
-    thread = agent.get_new_thread()
+    session = agent.create_session()
 
     print(f"[blue]User:[/blue] What's the weather in Paris?")
-    response = await agent.run("What's the weather in Paris?", thread=thread)
+    response = await agent.run("What's the weather in Paris?", session=session)
     print(f"[green]Agent 1:[/green] {response.text}")
 
-    if thread.message_store:
-        messages = await thread.message_store.list_messages()
-        print(f"[dim]Thread contains {len(messages or [])} messages[/dim]")
-
-    # Create a second agent and continue with the same thread
-    agent2 = ChatAgent(
-        chat_client=client,
+    # Create a second agent and continue with the same session
+    agent2 = Agent(
+        client=client,
         instructions="You are a helpful weather agent.",
         tools=[get_weather],
     )
 
     print(f"\n[blue]User:[/blue] What was the last city I asked about?")
-    response = await agent2.run("What was the last city I asked about?", thread=thread)
+    response = await agent2.run("What was the last city I asked about?", session=session)
     print(f"[green]Agent 2:[/green] {response.text}")
-    print("[dim]Note: The second agent continues the conversation using the thread's message history.[/dim]")
-
-    # You can also create a new thread from existing messages
-    messages = await thread.message_store.list_messages() if thread.message_store else []
-    new_thread = AgentThread(message_store=ChatMessageStore(messages))
-
-    print(f"\n[blue]User:[/blue] How does Paris weather compare to London?")
-    response = await agent2.run("How does Paris weather compare to London?", thread=new_thread)
-    print(f"[green]Agent 2 (new thread):[/green] {response.text}")
-    print("[dim]Note: A new thread was created from the old thread's messages — conversation continues.[/dim]")
+    print("[dim]Note: The second agent continues the conversation using the session's message history.[/dim]")
 
 
 async def main() -> None:
-    """Run all thread examples to demonstrate different persistence patterns."""
-    await example_without_thread()
-    await example_with_thread()
-    await example_thread_across_agents()
+    """Run all session examples to demonstrate different persistence patterns."""
+    await example_without_session()
+    await example_with_session()
+    await example_session_across_agents()
 
     if async_credential:
         await async_credential.close()
