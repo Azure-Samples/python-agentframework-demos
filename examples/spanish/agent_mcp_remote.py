@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 
-from agent_framework import ChatAgent, MCPStreamableHTTPTool
+from agent_framework import Agent, MCPStreamableHTTPTool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -48,8 +48,8 @@ async def main() -> None:
             name="Microsoft Learn MCP",
             url="https://learn.microsoft.com/api/mcp",
         ) as mcp_server,
-        ChatAgent(
-            chat_client=client,
+        Agent(
+            client=client,
             instructions=(
                 "Ayudas con preguntas sobre la documentación de Microsoft. "
                 "Usa las herramientas disponibles para buscar documentación relevante. "

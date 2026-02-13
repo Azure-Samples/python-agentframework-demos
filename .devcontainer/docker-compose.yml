@@ -4,10 +4,16 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     volumes:
-      - ..:/workspaces/python-agentframework-demos:cached
+      - ..:/workspace:cached
     command: sleep infinity
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+
+  redis:
+    image: redis/redis-stack-server:latest
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
 
   aspire-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:latest

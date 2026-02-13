@@ -11,7 +11,7 @@ from agent_framework import (
     AgentExecutorResponse,
     AgentResponse,
     AgentRunUpdateEvent,
-    ChatAgent,
+    Agent,
     ChatMessage,
     Content,
     Executor,
@@ -209,10 +209,10 @@ class Coordinator(Executor):
         )
 
 
-def create_writer_agent() -> ChatAgent:
+def create_writer_agent() -> Agent:
     """Crea un agente escritor con herramientas."""
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="writer_agent",
         instructions=(
             "Eres un escritor de marketing. "
@@ -227,10 +227,10 @@ def create_writer_agent() -> ChatAgent:
     )
 
 
-def create_final_editor_agent() -> ChatAgent:
+def create_final_editor_agent() -> Agent:
     """Crea un agente editor final."""
-    return ChatAgent(
-        chat_client=client,
+    return Agent(
+        client=client,
         name="final_editor_agent",
         instructions=(
             "Eres un editor que pule el texto de marketing después de la aprobación humana. "

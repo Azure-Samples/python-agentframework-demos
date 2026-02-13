@@ -4,7 +4,7 @@ import os
 import random
 from typing import Annotated
 
-from agent_framework import ChatAgent
+from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -43,6 +43,7 @@ else:
     )
 
 
+@tool
 def get_weather(
     city: Annotated[str, Field(description="City name")],
 ) -> dict:
@@ -60,8 +61,8 @@ def get_weather(
         }
 
 
-agent = ChatAgent(
-    chat_client=client,
+agent = Agent(
+    client=client,
     instructions="Eres un agente informativo. Responde a las preguntas con buena onda.",
     tools=[get_weather],
 )
