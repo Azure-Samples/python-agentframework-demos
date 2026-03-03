@@ -1,7 +1,8 @@
 """Email agent workflow with tool approval for sensitive operations.
 
-Demonstrates: @tool(approval_mode="always_require"), FunctionApprovalRequestContent,
-to_function_approval_response(), and an event loop that handles approval requests.
+Demonstrates: @tool(approval_mode="always_require"), Content type checking
+with data.type == "function_approval_request", to_function_approval_response(),
+and an event loop that handles approval requests via get_request_info_events().
 
 An email-writing agent processes incoming emails and uses tools to look up
 context and send replies. Tools like send_email and read_historical_email_data

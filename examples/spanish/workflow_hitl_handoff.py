@@ -55,8 +55,8 @@ def process_return(
     order_number: Annotated[str, "The 3-digit order number"],
     return_type: Annotated[str, "Either 'refund' or 'replacement'"],
 ) -> str:
-    """Process a product return for the given order."""
-    return f"Return processed for order {order_number}: {return_type} approved. Confirmation email sent."
+    """Procesa una devolución de producto para el pedido indicado."""
+    return f"Devolución procesada para el pedido {order_number}: {return_type} aprobado. Correo de confirmación enviado."
 
 
 # --- Agentes ---
@@ -107,7 +107,8 @@ workflow = (
         name="customer_support",
         participants=[triage_agent, order_agent, return_agent],
         termination_condition=lambda conversation: (
-            len(conversation) > 0 and "goodbye" in conversation[-1].text.lower()
+            len(conversation) > 0
+            and any(word in conversation[-1].text.lower() for word in ("adiós", "adios", "chao"))
         ),
     )
     .with_start_agent(triage_agent)

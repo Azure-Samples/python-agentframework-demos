@@ -32,10 +32,11 @@ Each example .py file should have a corresponding file with the same name under 
 * Comments: Spanish
 * Docstrings: Spanish
 * System prompts (agent instructions): Spanish
-* Tool descriptions (metadata like description=): English
-* Parameter descriptions (Field(description=...)): English
 * Identifiers (functions/classes/vars): English
 * User-facing output/data (e.g., example responses, sample values): Spanish
+* @tool function names: English
+* @tool parameter descriptions (Field(description=...)): English
+* @tool docstrings: Spanish
 * HITL control words: bilingual (approve/aprobar, exit/salir)
 * Agent and workflow names: English ("TravelPlannerAgent" should be the same in both versions, not "AgentePlanificadorDeViajes")
 

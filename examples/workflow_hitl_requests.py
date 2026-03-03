@@ -8,7 +8,7 @@ for the next message. The human can type "done" to finish the conversation.
 This is the minimal HITL pattern — every agent response triggers a human turn.
 
 Run:
-    uv run examples/workflow_hitl_chat.py
+    uv run examples/workflow_hitl_requests.py
 """
 
 import asyncio

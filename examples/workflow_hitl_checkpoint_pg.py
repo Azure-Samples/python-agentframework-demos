@@ -9,12 +9,12 @@ Run:
 """
 
 import asyncio
-import json
 import os
 from dataclasses import dataclass
 from typing import Any
 
 import psycopg
+from psycopg.types.json import Jsonb
 from agent_framework import (
     Agent,
     AgentExecutor,
@@ -28,7 +28,10 @@ from agent_framework import (
     handler,
     response_handler,
 )
-from agent_framework._workflows._checkpoint import WorkflowCheckpoint
+from agent_framework import WorkflowCheckpoint
+
+# Private import — no public API for checkpoint encoding yet.
+# See: https://github.com/microsoft/agent-framework/issues/4428
 from agent_framework._workflows._checkpoint_encoding import decode_checkpoint_value, encode_checkpoint_value
 from agent_framework.exceptions import WorkflowCheckpointException
 from agent_framework.openai import OpenAIChatClient
@@ -79,7 +82,7 @@ class PostgresCheckpointStorage:
                    VALUES (%s, %s, %s, %s)
                    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data""",
                 (checkpoint.checkpoint_id, checkpoint.workflow_name,
-                 checkpoint.timestamp, json.dumps(encoded)),
+                 checkpoint.timestamp, Jsonb(encoded)),
             )
         return checkpoint.checkpoint_id
 

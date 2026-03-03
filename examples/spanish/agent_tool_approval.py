@@ -62,7 +62,7 @@ receipts_db: dict[str, dict[str, str]] = {
 def lookup_receipt(
     receipt_id: Annotated[str, "The receipt ID to look up"],
 ) -> dict[str, str]:
-    """Look up a receipt by ID and return its details."""
+    """Busca un recibo por ID y devuelve sus detalles."""
     return receipts_db.get(receipt_id, {"error": f"Recibo {receipt_id} no encontrado"})
 
 
@@ -72,7 +72,7 @@ def submit_expense_report(
     total_amount: Annotated[str, "Total amount to reimburse"],
     receipt_ids: Annotated[str, "Comma-separated receipt IDs included"],
 ) -> str:
-    """Submit an expense report for reimbursement. Requires manager approval."""
+    """Envía un reporte de gastos para reembolso. Requiere aprobación del gerente."""
     report = {"description": description, "total_amount": total_amount, "receipt_ids": receipt_ids}
     submitted_reports.append(report)
     return f"Reporte de gastos enviado: {description} por {total_amount} (recibos: {receipt_ids})"

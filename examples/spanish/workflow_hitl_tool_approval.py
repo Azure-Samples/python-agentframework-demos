@@ -1,7 +1,8 @@
 """Workflow de agente de correo con aprobación de herramientas para operaciones sensibles.
 
-Demuestra: @tool(approval_mode="always_require"), FunctionApprovalRequestContent,
-to_function_approval_response(), y un bucle de eventos que maneja solicitudes de aprobación.
+Demuestra: @tool(approval_mode="always_require"), verificación de tipo Content
+con data.type == "function_approval_request", to_function_approval_response(),
+y un bucle de eventos que maneja solicitudes de aprobación via get_request_info_events().
 
 Un agente de redacción de correos procesa correos entrantes y usa herramientas para
 buscar contexto y enviar respuestas. Herramientas como send_email y read_historical_email_data
@@ -65,13 +66,13 @@ else:
 
 @tool(approval_mode="never_require")
 def get_current_date() -> str:
-    """Get the current date in YYYY-MM-DD format."""
+    """Obtiene la fecha actual en formato YYYY-MM-DD."""
     return "2026-03-05"
 
 
 @tool(approval_mode="never_require")
 def get_team_members_email_addresses() -> list[dict[str, str]]:
-    """Get the email addresses of team members."""
+    """Obtiene las direcciones de correo de los miembros del equipo."""
     return [
         {"name": "Alice", "email": "alice@contoso.com", "position": "Ingeniera de Software"},
         {"name": "Bob", "email": "bob@contoso.com", "position": "Gerente de Producto"},
@@ -85,7 +86,7 @@ async def read_historical_email_data(
     start_date: Annotated[str, "The start date in YYYY-MM-DD format"],
     end_date: Annotated[str, "The end date in YYYY-MM-DD format"],
 ) -> list[dict[str, str]]:
-    """Read historical email data for a given email address and date range."""
+    """Lee datos históricos de correo para una dirección y rango de fechas."""
     historical_data = {
         "alice@contoso.com": [
             {
@@ -119,7 +120,7 @@ async def send_email(
     subject: Annotated[str, "The email subject"],
     body: Annotated[str, "The email body"],
 ) -> str:
-    """Send an email."""
+    """Envía un correo electrónico."""
     await asyncio.sleep(0.5)  # Simula el envío
     return "Correo enviado exitosamente."
 

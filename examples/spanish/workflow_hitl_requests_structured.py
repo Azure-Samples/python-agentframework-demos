@@ -187,7 +187,7 @@ async def main() -> None:
 
         for request_id, request in pending.items():
             print(f"\n⏸️  El agente pregunta: {request.message}")
-            answer = input("💬 Tu respuesta (o 'exit/salir'): ")
+            answer = input("💬 Tu respuesta: ")
             pending[request_id] = answer
 
         stream = workflow.run(stream=True, responses=pending)
