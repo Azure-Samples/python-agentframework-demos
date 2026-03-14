@@ -34,6 +34,7 @@ from typing import Any
 import psycopg
 from openai import OpenAI
 from pgvector.psycopg import register_vector
+from pgvector import Vector
 
 from agent_framework import Agent, AgentSession, BaseContextProvider, Message, SessionContext, SupportsAgentRun
 from agent_framework.openai import OpenAIChatClient
@@ -257,7 +258,7 @@ class PostgresKnowledgeProvider(BaseContextProvider):
 
     def _search(self, query: str) -> list[dict]:
         """Run hybrid search (vector + full-text) and return matching products."""
-        query_embedding = get_embedding(query)
+        query_embedding = Vector(get_embedding(query))
 
         cursor = self.conn.execute(
             HYBRID_SEARCH_SQL,
