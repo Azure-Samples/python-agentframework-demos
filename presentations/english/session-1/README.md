@@ -1,4 +1,4 @@
-# Python + Agents (Session 1): 🛠️ Building your first agent in Python
+# Python + Agents (Session 1): Building your first agent in Python
 
 📺 [Watch the full recording on YouTube](https://www.youtube.com/watch?v=I4vCp9cpsiI) |
 📑 [Download the slides (PPTX)](https://aka.ms/pythonagents/slides/building)
@@ -9,270 +9,379 @@ This write-up includes an annotated version of the presentation slides with time
 
 - [Session description](#session-description)
 - [Annotated slides](#annotated-slides)
-  - [Overview of the Python + Agents livestream series](#overview-of-the-python--agents-livestream-series)
-  - [Building your first agent in Python: session topics](#building-your-first-agent-in-python-session-topics)
-  - [Running code examples using GitHub Codespaces](#running-code-examples-using-github-codespaces)
-  - [Agents 101: what is an agent?](#agents-101-what-is-an-agent)
-  - [Why do we need agents with tools?](#why-do-we-need-agents-with-tools)
-  - [Popular Python AI agent frameworks overview](#popular-python-ai-agent-frameworks-overview)
-  - [Tool calling without an agent framework](#tool-calling-without-an-agent-framework)
-  - [Understanding the tool calling flow](#understanding-the-tool-calling-flow)
-  - [Defining callable functions for the LLM](#defining-callable-functions-for-the-llm)
-  - [Extracting function calls from the LLM response](#extracting-function-calls-from-the-llm-response)
-  - [Invoking local Python functions based on LLM suggestions](#invoking-local-python-functions-based-on-llm-suggestions)
-  - [Sending tool results back to the LLM for response generation](#sending-tool-results-back-to-the-llm-for-response-generation)
-  - [Benefits of using the Microsoft agent framework](#benefits-of-using-the-microsoft-agent-framework)
-  - [Installing Microsoft agent framework packages](#installing-microsoft-agent-framework-packages)
-  - [Building an agent with a single tool using decorators](#building-an-agent-with-a-single-tool-using-decorators)
-  - [Single tool agent example: weather function](#single-tool-agent-example-weather-function)
-  - [Adding multiple tools to an agent to increase power](#adding-multiple-tools-to-an-agent-to-increase-power)
-  - [Multi-tool agent example with date, weather, and activities](#multi-tool-agent-example-with-date-weather-and-activities)
-  - [Using DevUI for local experimentation and debugging](#using-devui-for-local-experimentation-and-debugging)
-  - [Integrating agents with MCP server tools](#integrating-agents-with-mcp-server-tools)
-  - [Running a local MCP server example](#running-a-local-mcp-server-example)
-  - [Connecting to remote MCP servers for documentation queries](#connecting-to-remote-mcp-servers-for-documentation-queries)
-  - [Challenges with large MCP server definitions and token limits](#challenges-with-large-mcp-server-definitions-and-token-limits)
-  - [Agent middleware: concepts and types](#agent-middleware-concepts-and-types)
-  - [Middleware implementation examples](#middleware-implementation-examples)
-  - [Use cases and benefits of middleware](#use-cases-and-benefits-of-middleware)
-  - [Basic multi-agent architecture with supervisor and specialist agents](#basic-multi-agent-architecture-with-supervisor-and-specialist-agents)
-  - [Demonstration of multi-agent setup in code](#demonstration-of-multi-agent-setup-in-code)
-  - [Final slides, resources, and next steps](#final-slides-resources-and-next-steps)
+  - [Overview of the Python and Agents series](#overview-of-the-python-and-agents-series)
+  - [Building your first agent in Python](#building-your-first-agent-in-python)
+  - [Agenda: agents, tools, frameworks, MCP, middleware, and multi-agent](#agenda-agents-tools-frameworks-mcp-middleware-and-multi-agent)
+  - [Following along with the GitHub repo and Codespaces](#following-along-with-the-github-repo-and-codespaces)
+  - [What is an AI agent](#what-is-an-ai-agent)
+  - [Python AI agent frameworks](#python-ai-agent-frameworks)
+  - [What is tool calling](#what-is-tool-calling)
+  - [Tool calling flow](#tool-calling-flow)
+  - [Tell the LLM what functions it can call](#tell-the-llm-what-functions-it-can-call)
+  - [Get function name and arguments from response](#get-function-name-and-arguments-from-response)
+  - [Call a local function based on response](#call-a-local-function-based-on-response)
+  - [Send tool results to LLM for final answer](#send-tool-results-to-llm-for-final-answer)
+  - [Installing agent-framework](#installing-agent-framework)
+  - [Single agent with a single tool](#single-agent-with-a-single-tool)
+  - [Single agent with multiple tools](#single-agent-with-multiple-tools)
+  - [Local experimentation with DevUI](#local-experimentation-with-devui)
+  - [Model Context Protocol overview](#model-context-protocol-overview)
+  - [MCP client and server architecture](#mcp-client-and-server-architecture)
+  - [Agent with MCP server tools](#agent-with-mcp-server-tools)
+  - [Agent with local MCP server](#agent-with-local-mcp-server)
+  - [Agent with remote MCP server](#agent-with-remote-mcp-server)
+  - [Agent middleware layers](#agent-middleware-layers)
+  - [Agent middleware example](#agent-middleware-example)
+  - [Chat middleware example](#chat-middleware-example)
+  - [Function middleware example](#function-middleware-example)
+  - [Class-based middleware](#class-based-middleware)
+  - [Middleware with termination](#middleware-with-termination)
+  - [Registering middleware per agent](#registering-middleware-per-agent)
+  - [Registering middleware per run](#registering-middleware-per-run)
+  - [Middleware scenarios](#middleware-scenarios)
+  - [Supervisor agent with sub-agents](#supervisor-agent-with-sub-agents)
+  - [Implementing a supervisor agent](#implementing-a-supervisor-agent)
+  - [Multi-agent workflows preview](#multi-agent-workflows-preview)
+  - [Next steps and resources](#next-steps-and-resources)
 - [Live Chat Q&A](#live-chat-qa)
 - [Discord Office Hours Q&A](#discord-office-hours-qa)
 
 ## Session description
 
-In the first session of our Python + Agents series, we kicked things off with the fundamentals: what AI agents are, how they work, and how to build your first one using the Microsoft Agent Framework.
-
-We started with the core anatomy of an agent, then walked through how tool calling works in practice—beginning with a single tool, expanding to multiple tools, and finally connecting to tools exposed through local MCP servers.
-
-We concluded with the supervisor agent pattern, where a single supervisor agent coordinates subtasks across multiple subagents, by treating each agent as a tool.
-
-Along the way, we shared tips for debugging and inspecting agents, like using the DevUI interface from Microsoft Agent Framework for interacting with agent prototypes.
+This is the first session in the Python + Agents series, a six-session program covering how to build AI agents using the Microsoft Agent Framework. This session starts from the fundamentals — what an agent is, how tool calling works at the protocol level — and builds up to constructing agents with the `agent-framework` package. It covers single-agent patterns with one or multiple tools, MCP server integration (both local and remote), middleware for cross-cutting concerns like logging and content filtering, and a basic supervisor multi-agent architecture.
 
 ## Annotated slides
 
-### Overview of the Python + Agents livestream series
+### Overview of the Python and Agents series
 
-![Title slide of Python + Agents livestream series](images/slide_1.png)  
-[Watch from 00:53](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=53s)
+![Series overview slide listing all six sessions](images/slide_1.png)
+[Watch from 00:00](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=0s)
 
-This series spans six live sessions over two weeks, focusing on building AI agents and workflows with Python and the Microsoft Agent Framework. Week one emphasizes core agent building blocks: adding tools, context, and memory, plus evaluating and monitoring agents. Week two covers more advanced workflows involving conditionals, concurrent agents, consensus mechanisms, and human-in-the-loop integration. The framework supports both Python and .NET, enabling developers to build sophisticated applications atop generative AI technology.
+The Python + Agents series spans six sessions across two weeks. Week one covers building a first agent, adding context and memory, and monitoring and evaluating agents. Week two covers AI-driven workflows, advanced multi-agent orchestration, and human-in-the-loop patterns. All sessions are recorded and available after the live stream. Registration is at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series).
 
-### Building your first agent in Python: session topics
+### Building your first agent in Python
 
-![Session topics slide](images/slide_3.png)  
+![Title slide for session 1](images/slide_2.png)
+[Watch from 01:56](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=116s)
+
+Session 1 is presented by Pamela Fox, a Python Cloud Advocate at Microsoft. The slides are available at [aka.ms/pythonagents/slides/building](https://aka.ms/pythonagents/slides/building).
+
+### Agenda: agents, tools, frameworks, MCP, middleware, and multi-agent
+
+![Agenda slide](images/slide_3.png)
 [Watch from 03:16](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=196s)
 
-The session covers defining agents, understanding tools and tool calling, building agents with the Microsoft Agent Framework, integrating with MCP servers, using middleware to intercept agent execution, and creating a basic multi-agent architecture. It provides a foundation for practical agent development and integration in real-world applications.
+The session covers six topics: what an agent is, how tool calling works, building agents with agent-framework, integrating agents with MCP server tools, agent middleware, and supervisor agent architecture. The first half focuses on understanding the low-level mechanics; the second half introduces higher-level abstractions.
 
-### Running code examples using GitHub Codespaces
+### Following along with the GitHub repo and Codespaces
 
-![GitHub Codespaces setup slide](images/slide_4.png)  
+![Instructions for following along using Codespaces](images/slide_4.png)
 [Watch from 04:25](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=265s)
 
-Developers can follow along by opening the provided GitHub repository using Codespaces, a cloud-based VS Code environment. Codespaces automatically configures dependencies including Python packages, the agent framework, and supporting services like PostgreSQL and Redis. This setup simplifies running examples without local installation. Free GitHub models provide the underlying LLMs needed to execute the agents. Users are guided to create a Codespace from the main branch and wait a few minutes for the environment to load fully.
+A GitHub repository at [aka.ms/python-agentframework-demos](https://aka.ms/python-agentframework-demos) contains all demo code. To follow along, create a GitHub Codespace from the repo — the dev container is pre-configured with Python, `uv`, and all dependencies. The Codespace takes a few minutes to start up. A `.env` file with Azure OpenAI credentials needs to be configured (or an API key from another provider can be used instead).
 
-### Agents 101: what is an agent?
+### What is an AI agent
 
-![Definition of an agent slide](images/slide_6.png)  
+![Definition of an AI agent with diagram](images/slide_6.png)
 [Watch from 07:24](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=444s)
 
-An agent is defined as an LLM that runs tools in a loop to achieve a goal. This simple definition encapsulates a powerful concept: the LLM selects appropriate tools, calls them with suitable arguments, receives results, and iterates until the objective is met. Effective agents depend on having the right tools with accurate knowledge and a capable LLM that can orchestrate tool usage. Agents can be augmented with context, memory, explicit planning, and human feedback to enhance their capabilities beyond this core loop.
+An AI agent uses an LLM to run tools in a loop to achieve a goal. The key elements are the LLM (the reasoning engine), tools (functions the agent can call), and a loop (the agent keeps calling tools until the goal is met). Agents can be augmented with context (background knowledge), memory (recall of past interactions), planning (multi-step reasoning), and human oversight.
 
-### Why do we need agents with tools?
+Without tools, an LLM can only generate text based on its training data. Tools let the agent take actions — calling APIs, querying databases, running computations — and incorporate live data into its responses. The loop is what distinguishes an agent from a simple tool-calling LLM: the agent iterates, using tool results to decide what to do next.
 
-![Agent without tools example slide](images/slide_9.png)  
-[Watch from 09:53](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=593s)
+### Python AI agent frameworks
 
-Agents without tools are limited to their pretrained knowledge and often hallucinate or provide outdated answers. For example, an agent asked about the weather without a weather tool cannot fetch live data and might guess incorrectly. Equipping agents with tools allows them to ground their answers in real-time, domain-specific data and reduces hallucinations. Tools empower agents to solve practical problems in specialized domains by extending beyond their base language model capabilities.
-
-### Popular Python AI agent frameworks overview
-
-![Python AI agent frameworks slide](images/slide_7.png)  
+![Table of four Python AI agent frameworks](images/slide_7.png)
 [Watch from 13:43](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=823s)
 
-Several Python frameworks support building AI agents, each with distinct features:
+Four frameworks are highlighted. **agent-framework** is a Microsoft framework (successor to AutoGen and Semantic Kernel) with support for agentic patterns and Azure integrations. **LangChain v1** is an agent-centric framework built on LangGraph with optional LangSmith monitoring. **pydantic-ai** focuses on type safety and observability via Logfire/OpenTelemetry. **openai-agents** is OpenAI's framework optimized for OpenAI models and the Responses API.
 
-- **Microsoft Agent Framework**: Successor to AutoGen and Semantic Kernel, offering modern, flexible, and feature-rich tooling.
-- **Langchain v1**: Agent-centric open-source framework integrating with Langraph for monitoring and deployment.
-- **Pydantic AI**: Focuses on type safety and integrates well with Python typing.
-- **OpenAI agents**: Simpler, less flexible but suitable for basic OpenAI model use cases.
+This session uses agent-framework for all demos, but the concepts (tool calling, MCP, middleware, multi-agent patterns) apply across frameworks. The important thing is to understand the patterns, not to memorize a specific API.
 
-This talk uses Microsoft Agent Framework for its advanced capabilities and ongoing development.
+### What is tool calling
 
-### Tool calling without an agent framework
-
-![Tool calling without a framework slide](images/slide_8.png)  
+![Explanation of tool calling with diagram](images/slide_9.png)
 [Watch from 16:07](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=967s)
 
-Tool calling is a core ability that enables an LLM to invoke external functions. Without a framework, developers must manually define JSON schema descriptions of tools, parse the LLM's function call responses (which include function name and arguments), invoke corresponding local functions, and feed the results back to the LLM to generate final answers. This involves careful serialization, deserialization, and error handling, which can be complex and error-prone.
+Tool calling (also called function calling) lets an LLM generate structured function calls instead of just text. The developer defines functions with JSON schemas describing parameters. When a user asks a question like "What's the weather in Paris?", the LLM responds with a function name (`get_weather`) and arguments (`"Paris"`) rather than trying to answer from training data. The developer's code then executes the actual function and feeds the result back to the LLM for a natural language response.
 
-### Understanding the tool calling flow
+### Tool calling flow
 
-![Tool calling flow diagram slide](images/slide_10.png)  
+![Five-step tool calling flow diagram](images/slide_10.png)
+[Watch from 17:30](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1050s)
+
+The tool calling flow has five steps: (1) code tells the LLM what tools are available, (2) the LLM responds with a suggested tool name and arguments, (3) code calls the local function, (4) code sends the return value back to the LLM along with prior messages, (5) the LLM generates a final response incorporating the tool result. This is the foundational mechanism that all agent frameworks build on.
+
+### Tell the LLM what functions it can call
+
+![Code example: defining tool JSON schema and calling the API](images/slide_11.png)
 [Watch from 19:17](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1157s)
 
-The tool calling process involves:
+Tools are defined as JSON objects with a function name, description, and parameter schema. Each parameter has a type and description. This schema is passed to the OpenAI chat completions API via the `tools` parameter alongside the messages. The LLM uses the schema to understand what functions are available and what arguments they expect.
 
-1. Defining tool schemas that describe available functions and their parameters.
-2. Sending the user query and tool definitions to the LLM.
-3. The LLM suggesting which tool to call and with what arguments.
-4. The agent code executing the specified function locally.
-5. Returning the function's output to the LLM.
-6. The LLM generating a natural language response based on the results.
+```python
+tools = [{
+  "type": "function",
+  "function": {
+    "name": "lookup_weather",
+    "description": "Lookup the weather for a given city name or zip code.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city_name": {"type": "string", "description": "The city name"},
+        "zip_code": {"type": "string", "description": "The zip code"}
+      }
+    }
+  }
+}]
+```
 
-The LLM itself never executes code but decides the tool invocation plan.
+### Get function name and arguments from response
 
-### Defining callable functions for the LLM
+![Code example: extracting function name and arguments](images/slide_12.png)
+[Watch from 21:51](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1311s)
 
-![Function definition and JSON schema slide](images/slide_11.png)  
-[Watch from 21:17](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1277s)
+When the LLM decides to call a tool, the response includes `tool_calls` on the message object. Each tool call contains the function name and a JSON string of arguments that must be parsed with `json.loads()`. If there are no tool calls, the response is just regular text content.
 
-Functions exposed to the LLM must be described via JSON schema, including the function name, descriptions, parameter names, types, and documentation. The LLM sees this schema, not the underlying code. Properly annotating argument types and descriptions improves the LLM's understanding of how to call the tools effectively.
+### Call a local function based on response
 
-### Extracting function calls from the LLM response
+![Code example: executing the local function](images/slide_13.png)
+[Watch from 22:17](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1337s)
 
-![Parsing LLM response slide](images/slide_12.png)  
-[Watch from 22:56](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1376s)
+The developer is responsible for actually calling the function. The code matches the function name from the LLM response to a local Python function and unpacks the arguments with `**`. The LLM never executes code — it only suggests which function to call and with what arguments.
 
-When the LLM responds, it may include a suggested function call encoded in JSON. The agent must parse this response to extract the function name and arguments, deserialize the JSON, and verify that the function is recognized locally.
+### Send tool results to LLM for final answer
 
-### Invoking local Python functions based on LLM suggestions
+![Code example: sending tool result back to LLM](images/slide_14.png)
+[Watch from 23:06](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1386s)
 
-![Calling functions and returning results slide](images/slide_13.png)  
-[Watch from 23:41](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1421s)
+After calling the function, the code appends the assistant's original message (with the tool call) and a new `tool` role message containing the JSON-serialized result. This full message history is sent back to the LLM in a second API call. The LLM then generates a natural language answer incorporating the tool result, e.g., "It's currently sunny in Los Angeles, CA with a temperature around 75°F."
 
-After parsing, the agent calls the corresponding local Python function with the extracted arguments. The function runs in the agent's environment, producing output that is then sent back to the LLM for further processing and to generate the final answer.
+This manual four-step process is exactly what agent frameworks automate. Understanding it helps debug issues when using higher-level abstractions.
 
-### Sending tool results back to the LLM for response generation
+### Installing agent-framework
 
-![LLM final response generation slide](images/slide_14.png)  
+![Installation instructions for agent-framework subpackages](images/slide_16.png)
 [Watch from 24:27](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1467s)
 
-The LLM receives the tool output and integrates it into a coherent natural language response. This completes one iteration of the agent's tool-calling loop.
+Rather than installing the full `agent-framework` package, install only the subpackages needed: `agent-framework-core` for the core agent primitives and `agent-framework-devui` for the local development UI. This reduces indirect dependencies. The demo repository pins to a specific git commit since agent-framework was undergoing rapid changes at the time of the session.
 
-### Benefits of using the Microsoft agent framework
+### Single agent with a single tool
 
-![Agent framework benefits slide](images/slide_15.png)  
-[Watch from 24:27](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1467s)
-
-The agent framework abstracts away the complexity of manual tool calling, including schema management, response parsing, error handling, and orchestration. It provides decorators to easily mark Python functions as tools, automatically generating schemas and managing calls. This reduces boilerplate and development effort, enabling rapid agent creation.
-
-### Installing Microsoft agent framework packages
-
-![Agent framework installation slide](images/slide_16.png)  
-[Watch from 25:20](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1520s)
-
-The framework is modular with a core package and sub-packages. For this session, only `agent-framework-core` and `agent-framework-devui` are installed. The latest development version is pulled directly from GitHub to capture rapid updates, though official versioned releases are forthcoming. Installation is managed via `uv` (a Rust-based Python environment manager) for fast and reliable setup.
-
-### Building an agent with a single tool using decorators
-
-![Single tool agent code example slide](images/slide_17.png)  
+![Architecture diagram and code for single agent with one tool](images/slide_18.png)
 [Watch from 27:20](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1640s)
 
-Agents are constructed by defining Python functions decorated with `@tool` from the agent framework. This decorator signals the framework to treat the function as a callable tool, generating appropriate JSON schema from the function's argument annotations and docstrings. Rich argument metadata helps the LLM choose and invoke the tool correctly.
+The simplest agent pattern: one agent with one tool. Define a tool using the `@tool` decorator on a Python function with typed, annotated arguments and a docstring. The framework automatically generates the JSON schema from the type hints and descriptions. Create an `Agent` with a client, instructions (system prompt), and a list of tools. Call `agent.run()` with a user message.
 
-### Single tool agent example: weather function
+```python
+@tool
+def get_weather(
+    city: Annotated[str, Field(description="City name, spelled out fully")],
+) -> dict:
+    """Returns weather data, a dict with temperature and description."""
+    return {"temperature": 72, "description": "Sunny"}
 
-![Single tool weather agent example slide](images/slide_18.png)  
-[Watch from 31:14](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1874s)
+agent = Agent(client=client,
+    instructions="You're an info agent. Answer questions cheerfully.",
+    tools=[get_weather])
+response = await agent.run("Whats weather today in San Francisco?")
+```
 
-A weather agent includes a function that takes a city name as a string, annotated with descriptions to inform the LLM. The agent is created by passing the LLM client, system prompt, and a list containing this tool function. Running the agent executes the tool calling loop automatically, producing weather responses with simulated or randomized data.
+The `@tool` decorator replaces all the manual JSON schema definition and function dispatch from the earlier examples. The framework handles the tool calling loop automatically — calling the function, sending results back to the LLM, and iterating until a final response is ready.
 
-### Adding multiple tools to an agent to increase power
+### Single agent with multiple tools
 
-![Multi-tool agent architecture slide](images/slide_19.png)  
+![Architecture diagram and code for agent with multiple tools](images/slide_20.png)
 [Watch from 32:56](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=1976s)
 
-Agents become significantly more capable with multiple tools. For example, a weekend planner agent may include tools to get the current date, retrieve weather conditions, and suggest activities based on location and date. The LLM decides which tools to call, in what order, and how many times, enabling dynamic and context-aware interactions.
+When an agent has multiple tools, it must decide which tool to use and in what order. This example builds a weekend planner agent with three tools: `get_current_date`, `get_weather`, and `get_activities`. Given a question like "Plan my weekend in Portland," the agent first calls `get_current_date` to know what day it is, then calls `get_weather` for the forecast, and finally calls `get_activities` with the city and date. The LLM decides the call order based on parameter dependencies.
 
-### Multi-tool agent example with date, weather, and activities
+The agent may call tools in parallel if they don't depend on each other's outputs. It may also call tools multiple times — for example, calling `get_weather` for both Saturday and Sunday. The tool-calling loop continues until the agent has enough information to produce a final answer.
 
-![Multi-tool agent code example slide](images/slide_20.png)  
-[Watch from 33:44](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2024s)
+### Local experimentation with DevUI
 
-Each tool is defined as a decorated function with detailed type annotations and descriptions. The agent receives all tools as a list. The LLM intelligently sequences calls: it fetches the current date, then weather, then activities for specific weekend dates, sometimes invoking tools multiple times for different days. This showcases the agent’s reasoning and planning capabilities.
-
-### Using DevUI for local experimentation and debugging
-
-![DevUI developer UI slide](images/slide_21.png)  
+![DevUI playground screenshot](images/slide_21.png)
 [Watch from 38:33](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2313s)
 
-DevUI is a local web-based playground included with the agent framework’s dev package. It allows interactive chatting with agents, displaying detailed logs of tool calls, arguments, responses, and token usage in real time. Developers can easily experiment with inputs, observe tool invocation sequences, and trace event streams for debugging and development without modifying code.
+DevUI is a local web-based playground for experimenting with agents. It provides a chat interface and shows full traces of tool calls, letting developers see exactly which tools were invoked, with what arguments, and what they returned. Start it with:
 
-### Integrating agents with MCP server tools
+```python
+from agent_framework.devui import serve
+serve(entities=[agent], auto_open=True)
+```
 
-![Agent integration with MCP servers slide](images/slide_22.png)  
+DevUI is useful for rapid iteration during development. It opens a browser window with a chat panel where developers can send messages and observe the agent's reasoning process in real time.
+
+### Model Context Protocol overview
+
+![MCP protocol overview](images/slide_23.png)
 [Watch from 43:07](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2587s)
 
-The Model Context Protocol (MCP) is an open standard for LLMs to interact with external tools and data sources via defined servers. Agents can act as MCP clients, querying servers for available tools and invoking them remotely. This enables leveraging existing, possibly complex, external services as tools without embedding them locally.
+The Model Context Protocol (MCP) is an open protocol created by Anthropic that standardizes how LLMs interact with external tools, data sources, and applications. Instead of each framework implementing its own tool integration, MCP provides a common interface. An MCP server exposes tools, prompts, and resources that any MCP-compatible client can discover and use. See [modelcontextprotocol.io](https://modelcontextprotocol.io/) for the specification.
 
-### Running a local MCP server example
+### MCP client and server architecture
 
-![Local MCP server example slide](images/slide_23.png)  
-[Watch from 45:29](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2729s)
+![MCP architecture diagram with hosts, clients, and servers](images/slide_24.png)
+[Watch from 43:30](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2610s)
 
-A local MCP server is launched exposing a tool, such as adding expenses to a file. The agent connects to this server via its URL, retrieves tool definitions, and can call the remote tool as if it were local. This decouples tool implementation from the agent and allows reuse of services hosted anywhere, including cloud environments.
+An MCP host (such as VS Code, Claude Code, or a custom agent) contains one or more MCP clients. Each client connects to an MCP server. A server exposes tools, prompts, and resources. The host queries each server to discover available tools, then the agent can call those tools like any other tool. This decouples tool implementation from the agent framework.
 
-### Connecting to remote MCP servers for documentation queries
+### Agent with MCP server tools
 
-![Remote MCP server example slide](images/slide_24.png)  
+![Architecture diagram: agent discovering and calling MCP tools](images/slide_25.png)
+[Watch from 44:15](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2655s)
+
+When an agent connects to MCP servers, it first sends a discovery request to each server asking "what tools do you have?" Each server responds with its tool list. The agent then has a combined pool of all available tools from all connected servers. When the LLM decides to call a tool, the framework routes the call to the correct MCP server. This is transparent — the agent treats MCP tools and local tools identically.
+
+### Agent with local MCP server
+
+![Code example: connecting to a local MCP server](images/slide_26.png)
+[Watch from 45:26](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2726s)
+
+To connect to a local MCP server, first start the server as a separate process (`uv run examples/mcp_server.py`), then create an `MCPStreamableHTTPTool` pointing to its URL. The MCP tool is passed to the agent just like a local tool. The demo shows an expense tracking server — when the user says "I bought a laptop today for $1200 on my visa," the agent calls the MCP server's expense-logging tool.
+
+```python
+async with (
+    MCPStreamableHTTPTool(name="Local MCP Server",
+        url="http://localhost:8000/mcp") as mcp_server,
+    Agent(client=client, instructions="...", tools=[mcp_server]) as agent,
+):
+    response = await agent.run("I bought laptop today for $1200 on my visa.")
+```
+
+One consideration with MCP servers is token usage. Each discovered tool's schema is sent to the LLM as part of the prompt, which consumes tokens. Connecting to a server with many tools can significantly increase costs and reduce available context window.
+
+### Agent with remote MCP server
+
+![Code example: connecting to a remote MCP server](images/slide_27.png)
 [Watch from 48:36](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=2916s)
 
-Agents can connect to public MCP servers, such as Microsoft's Learn server, which provides access to extensive documentation tools without authentication. The agent uses these tools to answer domain-specific questions, like Azure CLI commands. However, large MCP server schemas can cause token limit issues, especially with models that have lower token capacity.
+Remote MCP servers work the same way as local ones — just point the URL to a remote endpoint. This example connects to the Microsoft Learn MCP server at `https://learn.microsoft.com/api/mcp`, which exposes documentation search tools. The agent can then answer questions like "How do I create an Azure Blob storage account using the az CLI?" by searching Microsoft's documentation through the MCP server.
 
-### Challenges with large MCP server definitions and token limits
+### Agent middleware layers
 
-![Token limit challenges slide](images/slide_25.png)  
+![Diagram of three middleware layers: agent, chat, and function](images/slide_29.png)
 [Watch from 50:21](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3021s)
 
-MCP server tool definitions may be large, consuming many tokens when sent to the LLM. This can result in exceeding model token limits, causing errors. Using models with higher token capacities (e.g., gpt-4.1-mini) mitigates this. Developers must be aware of token constraints and possibly optimize tool schemas or model choices accordingly.
+Middleware intercepts agent execution at three different layers. **Agent middleware** wraps the entire agent run and receives an `AgentContext` with access to messages, metadata, and the ability to override results or terminate. **Chat middleware** wraps individual LLM calls and receives a `ChatContext` with access to chat options, messages, and the ability to modify or block responses. **Function middleware** wraps individual tool calls and receives a `FunctionInvocationContext` with the function name, arguments, and return value.
 
-### Agent middleware: concepts and types
+Each layer follows the same pattern: pre-process, call `call_next()` to continue the chain, then optionally post-process. Setting `terminate = True` on the context stops execution. Middleware executes in registration order — agent middleware runs first (outermost), then chat middleware, then function middleware (innermost).
 
-![Agent middleware overview slide](images/slide_35.png)  
-[Watch from 53:00](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3180s)
+### Agent middleware example
 
-Middleware provides hooks to intercept and modify agent execution at three levels: agent middleware, chat middleware, and function middleware. Each operates at different abstraction layers and receives distinct context objects. Middleware enables logging, monitoring, modifying inputs/outputs, enforcing policies, and augmenting behavior dynamically during an agent's run.
+![Code example: timing agent middleware](images/slide_30.png)
+[Watch from 51:40](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3100s)
 
-### Middleware implementation examples
+An agent middleware function takes an `AgentContext` and a `call_next` callable. Code before `await call_next()` runs before the agent processes the request; code after runs when the agent completes. This timing middleware logs how long the entire agent execution takes.
 
-![Middleware code examples slide](images/slide_36.png)  
-[Watch from 55:00](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3300s)
+```python
+async def timing_agent_middleware(
+    context: AgentContext,
+    call_next: Callable[[], Awaitable[None]],
+) -> None:
+    start = time.perf_counter()
+    await call_next()
+    elapsed = time.perf_counter() - start
+    logger.info(f"Execution took {elapsed:.2f}s")
+```
 
-Middleware functions follow a pattern: they receive context and a next-callable, perform pre-processing, invoke the next step to continue the chain, then post-process results. They can be implemented as simple async functions or as classes inheriting from middleware base classes, supporting initialization, state, and termination control. Middleware can modify inputs, track timing, block requests, or handle errors.
+### Chat middleware example
 
-### Use cases and benefits of middleware
+![Code example: logging chat middleware](images/slide_31.png)
+[Watch from 52:30](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3150s)
 
-![Middleware use cases slide](images/slide_40.png)  
-[Watch from 56:53](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3413s)
+Chat middleware wraps each call to the LLM. The context provides access to the messages being sent, so middleware can log, modify, or filter them. This example logs the number of messages sent and confirms when a response is received.
 
-Middleware is useful for logging, timing, blocking unsafe content, summarizing conversations, dynamic system prompt injection, PII redaction, model fallback strategies, token limiting, security checks, and retry logic. Middleware can be shared across agents within organizations, promoting code reuse and consistency. It greatly enhances agent flexibility and control, especially in complex production scenarios.
+### Function middleware example
 
-Middleware can set a termination flag to stop the agent's execution early, useful for safety checks, quota enforcement, or blocking undesired requests. Middleware can also be packaged and shared within organizations, allowing consistent logging, security, and behavior modifications across different agents.
+![Code example: function invocation logging middleware](images/slide_32.png)
+[Watch from 53:10](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3190s)
 
-### Basic multi-agent architecture with supervisor and specialist agents
+Function middleware wraps each tool call. Before `call_next()`, the context contains the function name and arguments. After `call_next()`, the context also contains the return value. This is useful for audit logging, input validation, and caching.
 
-![Multi-agent architecture slide](images/slide_26.png)  
+### Class-based middleware
+
+![Code example: class-based chat middleware tracking message counts](images/slide_33.png)
+[Watch from 53:50](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3230s)
+
+Middleware can also be defined as a class that subclasses `ChatMiddleware` (or `AgentMiddleware` or `FunctionMiddleware`). This allows middleware to maintain state across invocations, such as counting the total number of messages processed. The class implements a `process()` method with the same signature as a function-based middleware.
+
+### Middleware with termination
+
+![Code example: blocking middleware that terminates on specific words](images/slide_34.png)
+[Watch from 54:30](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3270s)
+
+A middleware can completely stop agent execution by setting `context.terminate = True` and providing a result. This blocking middleware checks the last message for banned words (e.g., "nuclear") and returns a rejection message without ever calling the LLM. This pattern is useful for content filtering, authorization checks, and safety guardrails.
+
+### Registering middleware per agent
+
+![Code example: registering multiple middleware on an agent](images/slide_35.png)
+[Watch from 55:26](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3326s)
+
+Pass a list of middleware instances and functions to the `middleware` parameter when creating an agent. The list can mix function-based and class-based middleware, and can include middleware for all three layers (agent, chat, function). The framework sorts them by type automatically. In the demo, six different middleware are registered: timing, blocking, logging, counting, and more.
+
+### Registering middleware per run
+
+![Code example: adding middleware for a specific agent.run() call](images/slide_36.png)
+[Watch from 56:45](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3405s)
+
+Middleware can also be registered for a single invocation by passing it to `agent.run(middleware=[...])`. This is useful for adding temporary behavior like extra logging or debugging for a specific request without affecting other calls.
+
+### Middleware scenarios
+
+![Table of middleware use cases for each layer](images/slide_37.png)
+[Watch from 57:20](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3440s)
+
+Agent middleware is suited for logging, timing, content filtering, authorization, result caching, thread summarization, and dynamic system prompts. Chat middleware handles token tracking, latency measurement, budget enforcement, PII redaction, response moderation, and model fallback. Function middleware is ideal for audit logging, permission checks, input validation, caching, human-in-the-loop approval, tool call limits, and retry with backoff.
+
+The key advantage of middleware is reusability. Once built, a middleware can be shared across agents within an organization. A centralized middleware repository could serve as a gallery of pre-built cross-cutting concerns.
+
+### Supervisor agent with sub-agents
+
+![Architecture diagram: supervisor routing to specialist agents](images/slide_39.png)
 [Watch from 58:37](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3517s)
 
-Multi-agent setups involve a supervisor agent delegating tasks to specialized sub-agents based on the query. In this example, a parenting helper agent routes requests to a weekend planner agent or a meal planner agent. Each sub-agent is wrapped as a tool, allowing the supervisor to invoke them as if calling a function. This pattern supports modularity and task-specific expertise.
+In a supervisor architecture, a parent agent decides which specialist sub-agents should handle a task. Each sub-agent has its own tools and instructions. The example is a parenting helper with two specialists: a weekend planning agent (with weather and activities tools) and a meal planning agent (with recipe and fridge-checking tools). The supervisor routes incoming requests to the appropriate specialist based on the query.
 
-### Demonstration of multi-agent setup in code
+### Implementing a supervisor agent
 
-![Multi-agent supervisor-agent code example slide](images/slide_27.png)  
-[Watch from 01:00:36](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3636s)
+![Code example: sub-agents wrapped as tool functions](images/slide_40.png)
+[Watch from 59:14](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3554s)
 
-The supervisor agent is instantiated with references to its sub-agents, each decorated as a tool. It receives user input and chooses which sub-agent to invoke based on the task. This simple architecture allows discrete task handling but may require more sophisticated orchestration for complex workflows, covered in later sessions.
+The implementation is straightforward: create each sub-agent normally, then wrap each one in a `@tool`-decorated function. The supervisor agent lists these wrapper functions as its tools. When the supervisor decides to delegate, it calls the wrapper function, which runs the sub-agent and returns its text response.
 
-### Final slides, resources, and next steps
+```python
+@tool
+async def plan_weekend(query: str) -> str:
+    response = await weekend_agent.run(query)
+    return response.text
 
-![Closing resources and next steps slide](images/slide_29.png)  
+@tool
+async def plan_meal(query: str) -> str:
+    response = await meal_agent.run(query)
+    return response.text
+
+supervisor_agent = Agent(client=client,
+    instructions="You're a supervisor managing a weekend planner & meal planner",
+    tools=[plan_meal, plan_weekend])
+```
+
+This pattern works when tasks are clearly separable — the supervisor can unambiguously decide which sub-agent should handle a given request. For more complex orchestration involving conditional routing, parallel execution, or iterative collaboration, workflows (covered in week two) are more appropriate.
+
+### Multi-agent workflows preview
+
+![Diagram showing multi-agent workflow with conditional edges](images/slide_41.png)
+[Watch from 01:00:44](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3644s)
+
+For more complex multi-agent architectures, agent-framework supports workflows where agents are nodes in a graph. Workflows can include conditional edges, approval steps, human-in-the-loop checkpoints, and non-agent processing nodes. This is covered in detail in week two of the series.
+
+### Next steps and resources
+
+![Next steps slide with registration and resource links](images/slide_42.png)
 [Watch from 01:01:02](https://www.youtube.com/watch?v=I4vCp9cpsiI&t=3662s)
 
-The session concludes with links to slides, code repositories, and upcoming live streams. Participants are encouraged to register for the series, join Discord office hours for questions, and explore additional resources. Future sessions will cover adding context and memory to agents and advanced workflow orchestration.
+Resources for continuing: the series registration at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series), past recordings and links at [aka.ms/pythonagents/resources](https://aka.ms/pythonagents/resources), and office hours in the Foundry Discord at [aka.ms/pythonai/oh](https://aka.ms/pythonai/oh) after each session. The next session covers adding context and memory to agents.
+
 
 ## Live Chat Q&A
 
@@ -408,6 +517,7 @@ A supervisor agent manages multiple specialist agents by wrapping them as tools:
 3. The supervisor can potentially call multiple specialist agents, even in parallel
 
 Key observations from the live demo:
+
 - **Parallel tool calling** can happen — OpenAI models support suggesting multiple tool calls in a single response by default
 - If the agent doesn't have enough information, it may ask follow-up questions instead of completing the task. You need either a conversation loop or enough detail in the initial prompt.
 - Sub-agents are also useful for **reducing the context window**, which will be covered in the session on context and memory.

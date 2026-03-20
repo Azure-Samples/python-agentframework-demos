@@ -10,31 +10,45 @@ This write-up includes an annotated version of the presentation slides with time
 - [Session description](#session-description)
 - [Annotated slides](#annotated-slides)
   - [Overview of the Python and agent series](#overview-of-the-python-and-agent-series)
-  - [Adding context and memory to agents](#adding-context-and-memory-to-agents)
-  - [Agenda: types of context, memory, knowledge providers, and context management](#agenda-types-of-context-memory-knowledge-providers-and-context-management)
-  - [Following along with GitHub repository and Codespaces](#following-along-with-github-repository-and-codespaces)
-  - [What is an AI agent and why context matters](#what-is-an-ai-agent-and-why-context-matters)
-  - [Defining context in AI agents](#defining-context-in-ai-agents)
-  - [Understanding different types of memory in AI agents](#understanding-different-types-of-memory-in-ai-agents)
-  - [Implementing session memory with conversation sessions](#implementing-session-memory-with-conversation-sessions)
-  - [Persistent chat history and database storage options](#persistent-chat-history-and-database-storage-options)
-  - [Using Redis for chat history storage](#using-redis-for-chat-history-storage)
-  - [Implementing SQLite history provider for persistent chat](#implementing-sqlite-history-provider-for-persistent-chat)
-  - [Introduction to dynamic memory in AI agents](#introduction-to-dynamic-memory-in-ai-agents)
-  - [Using Redis for dynamic memory with hybrid search](#using-redis-for-dynamic-memory-with-hybrid-search)
-  - [Advanced memory management with MemZero package](#advanced-memory-management-with-memzero-package)
-  - [Demonstration of MemZero memory provider integration](#demonstration-of-memzero-memory-provider-integration)
-  - [Insights from GitHub Copilot’s memory system](#insights-from-github-copilots-memory-system)
-  - [Knowledge retrieval in AI agents](#knowledge-retrieval-in-ai-agents)
-  - [SQLite knowledge provider example](#sqlite-knowledge-provider-example)
-  - [Hybrid search techniques with PostgreSQL](#hybrid-search-techniques-with-postgresql)
-  - [Query rewriting for improved knowledge retrieval](#query-rewriting-for-improved-knowledge-retrieval)
-  - [Azure AI Search knowledge base integration](#azure-ai-search-knowledge-base-integration)
-  - [Key takeaways on knowledge retrieval](#key-takeaways-on-knowledge-retrieval)
-  - [Context management challenges and context window limits](#context-management-challenges-and-context-window-limits)
-  - [Context compaction and summarization middleware](#context-compaction-and-summarization-middleware)
-  - [Using sub-agents to reduce context size](#using-sub-agents-to-reduce-context-size)
-  - [Summary and closing remarks](#summary-and-closing-remarks)
+  - [Today's agenda](#todays-agenda)
+  - [Following along in GitHub Codespaces](#following-along-in-github-codespaces)
+  - [Recap: what is an agent?](#recap-what-is-an-agent)
+  - [Context is everything](#context-is-everything)
+  - [Memory overview](#memory-overview)
+  - [Conversation sessions](#conversation-sessions)
+  - [In-memory conversation sessions in agent framework](#in-memory-conversation-sessions-in-agent-framework)
+  - [Persistent chat history](#persistent-chat-history)
+  - [Persistent chat history concepts](#persistent-chat-history-concepts)
+  - [Persistent chat history in Redis](#persistent-chat-history-in-redis)
+  - [Persistent chat history with RedisHistoryProvider](#persistent-chat-history-with-redishistoryprovider)
+  - [Persistent chat history in SQLite](#persistent-chat-history-in-sqlite)
+  - [Persistent chat history with custom storage](#persistent-chat-history-with-custom-storage)
+  - [Dynamic memory](#dynamic-memory)
+  - [Dynamic memory design decisions](#dynamic-memory-design-decisions)
+  - [Dynamic memory with Redis](#dynamic-memory-with-redis)
+  - [RedisContextProvider code](#rediscontextprovider-code)
+  - [Dynamic memory with Mem0](#dynamic-memory-with-mem0)
+  - [Mem0 memory update process](#mem0-memory-update-process)
+  - [Mem0ContextProvider code](#mem0contextprovider-code)
+  - [Memory in production: GitHub Copilot](#memory-in-production-github-copilot)
+  - [Knowledge retrieval](#knowledge-retrieval)
+  - [Knowledge retrieval from SQLite](#knowledge-retrieval-from-sqlite)
+  - [Hybrid search with keyword and vector retrieval](#hybrid-search-with-keyword-and-vector-retrieval)
+  - [Knowledge retrieval from PostgreSQL](#knowledge-retrieval-from-postgresql)
+  - [Query rewriting for multi-turn conversations](#query-rewriting-for-multi-turn-conversations)
+  - [Query rewriting in a context provider](#query-rewriting-in-a-context-provider)
+  - [Knowledge retrieval with Azure AI Search](#knowledge-retrieval-with-azure-ai-search)
+  - [AzureAISearchContextProvider code](#azureaisearchcontextprovider-code)
+  - [Context management](#context-management)
+  - [Context window sizes and why they matter](#context-window-sizes-and-why-they-matter)
+  - [Context compaction with summarization](#context-compaction-with-summarization)
+  - [Summarization middleware architecture](#summarization-middleware-architecture)
+  - [Summarization middleware code](#summarization-middleware-code)
+  - [Context reduction with sub-agents](#context-reduction-with-sub-agents)
+  - [Coordinator agent with sub-agents code](#coordinator-agent-with-sub-agents-code)
+  - [Sub-agent token usage comparison](#sub-agent-token-usage-comparison)
+  - [When to use sub-agents](#when-to-use-sub-agents)
+  - [Next steps](#next-steps)
 - [Live Chat Q&A](#live-chat-qa)
 - [Discord Office Hours Q&A](#discord-office-hours-qa)
 
@@ -59,217 +73,286 @@ By the end, we saw how to build agents that were not only capable but context‑
 ![Series overview slide](images/slide_1.png)  
 [Watch from 00:05](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=5s)
 
-This series consists of six sessions teaching how to build AI agents using the Microsoft Agent Framework. It spans two weeks and progressively introduces tools, techniques, and best practices for creating intelligent agents capable of handling complex tasks. Registration remains open during the series, providing access to session recordings and resources.
+This series consists of six sessions teaching how to build AI agents using the Microsoft agent framework. It spans two weeks and progressively introduces tools, techniques, and best practices for creating intelligent agents capable of handling complex tasks. Registration remains open during the series, providing access to session recordings and resources.
 
 ### Adding context and memory to agents
 
 ![Session title slide](images/slide_2.png)  
 [Watch from 00:58](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=58s)
 
-This session focuses on enriching AI agents with context and memory to improve their capabilities and user experience. Context here refers broadly to all inputs that influence the agent’s decision-making and responses, while memory enables agents to recall past interactions, user preferences, and relevant knowledge dynamically.
+This is the second session of a six-part Python + Agents series. The full schedule covers building a first agent, adding context and memory, monitoring and evaluating agents, building AI-driven workflows, orchestrating multi-agent workflows, and adding a human-in-the-loop. Register at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series).
 
-### Agenda: types of context, memory, knowledge providers, and context management
+### Today's agenda
 
-![Agenda slide](images/slide_3.png)  
-[Watch from 02:26](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=146s)
+![Title slide: Adding context and memory to agents](images/slide_2.png)
+[Watch from 01:27](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=87s)
 
-The agenda covers defining context in AI agents, exploring various memory types, integrating knowledge providers for retrieval augmented generation (RAG), and managing context size and quality through techniques like summarization and sub-agents. These components collectively empower agents to operate with persistent awareness and domain-relevant knowledge.
+The session covers four main topics: what context means for agents, different kinds of memory (sessions, chat history, dynamic memory), knowledge providers for RAG, and context management techniques. Slides are available at [aka.ms/pythonagents/slides/contextmemory](https://aka.ms/pythonagents/slides/contextmemory).
 
-### Following along with GitHub repository and Codespaces
+### Following along in GitHub Codespaces
 
-![Instructions for following along](images/slide_4.png)  
-[Watch from 04:07](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=247s)
+![Agenda: context, memory, knowledge providers, context management](images/slide_3.png)
+[Watch from 01:42](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=102s)
 
-A GitHub repository is provided containing all examples and code needed for the session. Users can create a GitHub Codespace from the repository to run the examples without local setup. It’s recommended to perform a `git pull` after starting the Codespace to ensure the latest updates are present. While local setup is possible, it requires additional configuration steps outlined in the repository’s README.
+The agenda breaks down into: what is context, memory (sessions, chat history, dynamic memory), knowledge providers, and context management.
 
-### What is an AI agent and why context matters
+![Instructions for setting up GitHub Codespace](images/slide_4.png)
+[Watch from 02:28](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=148s)
 
-![Recap of AI agents](images/slide_5.png)  
+All examples live in the [python-agentframework-demos](https://aka.ms/python-agentframework-demos) repository. To follow along, open the repo, click the "Code" button, create a GitHub Codespace, wait for it to start, and run `git pull` to get the latest changes. The Codespace comes pre-configured with all dependencies, including a local Redis instance via Docker Compose. Running locally requires manual configuration of model connections per the README.
+
+### Recap: what is an agent?
+
+![Agent diagram: LLM + tools in a loop](images/slide_5.png)
+[Watch from 04:28](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=268s)
+
+An AI agent uses an LLM to run tools in a loop to achieve a goal. The previous session covered agents using local functions and MCP servers as tools. Agents become more powerful with better context: knowledge (domain-specific information), memory (remembering past interactions), and humans (providing additional input, covered in a later session).
+
+### Context is everything
+
+![Context inputs: instructions, environment, knowledge, memories, messages, tools](images/slide_6.png)
+[Watch from 06:22](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=382s)
+
+Context is all the inputs that help an agent decide what action to take next and how to respond. These inputs include: the system prompt (overall instructions like "You're a friendly weather assistant"), environment information (today's date, platform details), domain-specific knowledge (emergency alerts, relevant data that should always be present), memories from previous conversations (e.g., "the current user lives in California"), past messages in the session (the ongoing conversation), and tool descriptions, calls, and results. All of this gets sent to the LLM and helps it produce better answers.
+
+### Memory overview
+
+![Three types of memory: session, chat history, dynamic memory](images/slide_8.png)
 [Watch from 08:48](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=528s)
 
-An AI agent uses a large language model (LLM) to call tools iteratively toward achieving a user’s goal. Agents can have access to multiple tools and decide dynamically which to invoke. Adding context—such as domain knowledge and conversation history—enables agents to provide more accurate, relevant, and personalized responses beyond tool outputs alone.
+Memory breaks into three categories along an increasing spectrum of sophistication. **Session memory** is the simplest: can the LLM remember past messages within the current conversation? This requires storing all messages and tool calls, either in-memory or persisted to a database. Long threads may require truncation or summarization. **Chat history** stores conversations persistently so users can find and resume past sessions. This requires a database, user-linked session IDs, and potentially searchable storage. **Dynamic memory** lets the LLM remember facts and preferences across conversations. Memories are stored in a persistent database and retrieved (optionally via search) to personalize responses. See the [agent memory documentation](https://learn.microsoft.com/agent-framework/user-guide/agents/agent-memory) for more.
 
-### Defining context in AI agents
+### Conversation sessions
 
-![What is context?](images/slide_6.png)  
-[Watch from 08:48](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=528s)
-
-Context encompasses all inputs that help an agent decide what action to take and how to respond. This includes:
-
-- System prompts defining agent behavior (e.g., “You are a friendly weather assistant”)
-- Environment information like the current date or device type
-- Domain-specific knowledge relevant to the agent’s task (e.g., recent events)
-- Memories from past conversations about the user to personalize interactions
-- The current conversation history itself, including user messages and tool outputs
-
-All of these are combined into the agent’s input to the LLM to improve response quality.
-
-### Understanding different types of memory in AI agents
-
-![Memory types overview](images/slide_7.png)  
-[Watch from 08:48](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=528s)
-
-Memory in agents is categorized into three levels:
-
-1. **Session memory:** The simplest form where the agent remembers all messages and tool calls within the current conversation thread.
-2. **Persistent chat history:** The application stores past conversation sessions in a database so users can revisit or continue previous chats.
-3. **Dynamic memory:** The agent retains specific facts, preferences, or important information extracted from conversations, stored persistently and searchable to personalize future interactions.
-
-Each type requires different implementation strategies and storage considerations.
-
-### Implementing session memory with conversation sessions
-
-![Conversation sessions example](images/slide_8.png)  
+![Session includes all past messages in the conversation](images/slide_10.png)
 [Watch from 11:55](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=715s)
 
-Session memory involves tracking all messages and tool interactions within a single conversation. The Microsoft agent framework provides a `session` abstraction with unique IDs to manage this. By creating a session and passing it with each agent run, the agent maintains full context of the ongoing conversation, enabling accurate follow-up responses. Sessions can be serialized and shared across different agents, making them portable and restorable across time.
+A session contains all past messages: the system prompt, user messages, LLM responses, tool calls, and tool results. Without a session, the LLM cannot reference earlier parts of the conversation. If a user asks "What's the weather in Seattle?" and then "What was the last city I asked about?", the agent without a session will have no memory of the first question. Sessions are portable across agents -- you can create a session with one agent and pass it to another, enabling shared conversation history.
 
-### Persistent chat history and database storage options
+### In-memory conversation sessions in agent framework
 
-![Persistent chat history](images/slide_9.png)  
+![Code: Agent with create_session() and session parameter](images/slide_11.png)
+[Watch from 12:35](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=755s)
+
+By default, a session stores conversation messages in memory. Create an `Agent` with an `OpenAIChatClient` and instructions, call `agent.create_session()` to get a session object with a unique ID, then pass that session to each `agent.run()` call. The session accumulates messages so the LLM sees the full conversation history. Sessions can be serialized and deserialized, making them restorable across restarts and even shareable across different agents.
+
+### Persistent chat history
+
+![Persistent chat history stored in a database](images/slide_13.png)
 [Watch from 16:18](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=978s)
 
-To remember conversations beyond a single session, chat history must be stored persistently. Design choices include:
+Persistent chat history enables users to find and resume previous conversations. When designing storage, consider: whether the entire session fits in one row (depends on database size limits), how sessions link to users (use unique identifiers like Entra OIDs for privacy), and whether sessions need to be searchable (requires a database with search support).
 
-- Identifying sessions uniquely in the database
-- Deciding whether to store entire threads in one record or split messages across multiple rows
-- Ensuring user privacy and secure separation of data
-- Supporting search capabilities on stored history if needed
+### Persistent chat history concepts
 
-Different databases like Redis, SQLite, Cosmos DB, or PostgreSQL can be used depending on scale, search requirements, and constraints.
+![Chat history in a generic database with session IDs and messages](images/slide_13.png)
+[Watch from 16:38](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=998s)
 
-### Using Redis for chat history storage
+Each session is identified by a unique session ID. The messages can be stored as a complete list per session or as individual rows per message. The choice depends on database constraints and query patterns.
 
-![Redis chat history architecture](images/slide_10.png)  
-[Watch from 18:39](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1119s)
+### Persistent chat history in Redis
 
-Redis is a fast, in-memory key-value store suitable for storing chat history as a list of messages per session. The agent framework includes a built-in `RedisHistoryProvider` that manages storing and retrieving entire conversation threads keyed by session ID. This approach enables session resumption even after application restarts. In development environments like GitHub Codespaces, Redis can run locally via Docker. For production, managed Redis services such as Azure Redis are recommended.
+![Redis storage: session ID keys with message list values](images/slide_14.png)
+[Watch from 17:27](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1047s)
 
-### Implementing SQLite history provider for persistent chat
+Redis stores chat history with session IDs as keys and the entire list of messages as the value using Redis's LIST type. Each message is a JSON object with role, content, and optionally tool_call fields. The list can be truncated to the most recent N messages if needed. Redis is the simplest option since agent framework has built-in support for it via `RedisHistoryProvider`.
 
-![SQLite chat history schema and example](images/slide_11.png)  
+### Persistent chat history with RedisHistoryProvider
+
+![Code: RedisHistoryProvider as a context provider](images/slide_15.png)
+[Watch from 17:59](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1079s)
+
+Import `RedisHistoryProvider` from `agent_framework.redis`, point it at a Redis URL, and give it a `source_id`. Pass it to the `Agent` as a `context_providers` list item. When creating a session, provide a unique `session_id` (e.g., via `uuid.uuid4()`). The history provider automatically persists and restores conversation history. A simulated restart -- creating a new provider instance and agent with the same session ID -- fully restores the previous conversation. The demo uses a local Redis instance running via Docker Compose; in production, use Azure Redis or another managed Redis service.
+
+### Persistent chat history in SQLite
+
+![SQLite storage: individual message rows with thread_id column](images/slide_16.png)
+[Watch from 21:41](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1301s)
+
+An alternative storage layout stores each message as a separate row with an auto-incrementing ID, a `thread_id` column (the session ID), and a `message_json` column. Retrieving a conversation means selecting all rows where `thread_id` matches, ordered by ID. This per-message row approach works well for databases with document size constraints, such as Cosmos DB. There are no built-in limits on the number of messages per session.
+
+### Persistent chat history with custom storage
+
+![Code: SQLiteHistoryProvider subclass of BaseHistoryProvider](images/slide_17.png)
 [Watch from 23:06](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1386s)
 
-SQLite offers a lightweight, file-based database option for storing chat history with a different schema design: each message is stored as a separate row with session ID and message JSON. This method suits databases with document size limits (e.g., Cosmos DB) and allows efficient retrieval by ordering messages by ID within a session. Implementing this requires subclassing the agent framework’s base history provider and defining methods to save and retrieve messages.
+For databases without built-in support, create a subclass of `BaseHistoryProvider` from agent framework. The subclass needs two key methods: `get_messages(session_id)` which queries the database and returns a list of `Message` objects, and `save_messages(session_id, messages)` which inserts messages into the database. The same pattern works for PostgreSQL, Cosmos DB, Azure SQL, or any other database. SQLite is used here for development convenience -- in production, use a managed database. The choice between databases depends on whether you need search capabilities: PostgreSQL offers strong full-text and vector search, Azure AI Search provides excellent hybrid search, and Cosmos DB and Azure SQL both support hybrid search.
 
-### Introduction to dynamic memory in AI agents
+### Dynamic memory
 
-![Dynamic memory diagram](images/slide_12.png)  
-[Watch from 28:10](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1690s)
+![Dynamic memory architecture with agent, LLM, and memory store](images/slide_19.png)
+[Watch from 28:27](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1707s)
 
-Dynamic memory enables agents to store and recall specific facts or preferences extracted from conversations. This involves:
+Dynamic memory lets an agent remember facts and preferences across conversations. The agent receives input, retrieves relevant memories from a memory store (often via search), and sends those memories to the LLM alongside the user's message. After the LLM responds, the system decides whether to store new memories. Key design decisions include: retrieving all memories vs. only the most relevant ones (via search), storing whole messages vs. LLM-synthesized memory summaries, and whether/how to forget obsolete memories.
 
-- Retrieving relevant memories via search before responding
-- Deciding which new facts to store after each interaction
-- Updating or deleting obsolete memories over time to reflect changes
-- Using persistent storage with support for efficient search (e.g., vector search)
+### Dynamic memory design decisions
 
-Dynamic memory enhances personalization and makes the agent appear more knowledgeable and adaptive.
+![Design questions: retrieving, storing, and forgetting memories](images/slide_19.png)
+[Watch from 29:02](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1742s)
 
-### Using Redis for dynamic memory with hybrid search
+Retrieving memories can be done by returning all of them (if the set is small) or searching for the most relevant ones. Storing memories ranges from naive (save every message) to intelligent (use an LLM to extract important facts). Forgetting is optional but important for long-lived systems -- outdated facts (like a user's age or location) need to be updated or removed over time.
 
-![Redis dynamic memory with hybrid search](images/slide_13.png)  
+### Dynamic memory with Redis
+
+![Redis dynamic memory: hybrid search retrieval, stores full messages](images/slide_20.png)
 [Watch from 30:22](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1822s)
 
-Redis can also support dynamic memory by combining naive storage of all messages with a hybrid search mechanism that merges keyword and vector search results. This approach retrieves only the most relevant memories to provide focused context to the LLM. The agent framework’s built-in Redis context provider handles this, requiring a stable user ID to associate memories with individual users.
+The Redis-based dynamic memory provider uses hybrid search (full-text, vector, or combined) to retrieve relevant memories. It stores entire user and assistant messages (excluding tool calls) -- a naive storage approach. There is no built-in mechanism for forgetting memories; they remain forever. Despite the naive storage, the approach works because the hybrid search filters to only relevant memories before sending them to the LLM.
 
-### Advanced memory management with MemZero package
+### RedisContextProvider code
 
-![MemZero memory system architecture](images/slide_14.png)  
+![Code: RedisContextProvider configuration with user_id](images/slide_21.png)
+[Watch from 31:27](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=1887s)
+
+Import `RedisContextProvider` from `agent_framework.redis`. Configure it with a Redis URL, index name, prefix, application ID, agent ID, and a unique `user_id`. Memory is user-specific, so the `user_id` must be consistent across sessions -- typically derived from a login system like Microsoft Entra (using the OID). Pass the memory provider as a `context_providers` item to the `Agent`. The agent automatically runs the context provider before and after each interaction.
+
+### Dynamic memory with Mem0
+
+![Mem0 architecture: LLM-based memory extraction and database search](images/slide_22.png)
 [Watch from 35:05](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2105s)
 
-MemZero is an open-source memory management package offering sophisticated dynamic memory. It uses an LLM to analyze agent responses and determine whether to add, update, or delete specific memories. The process involves:
+[Mem0](https://github.com/mem0ai/mem0) is an open-source memory package (also available as a hosted service) that provides a more sophisticated approach to dynamic memory. It uses an LLM to decide what to store rather than saving every message. By default it uses Qdrant as its vector database, but it can connect to Azure AI Search, PostgreSQL, or other databases. When retrieving memories, it searches the connected database. When storing, an LLM suggests new memories. When forgetting, an LLM recommends memory removal or updates.
 
-- Extracting potential new memories from the latest response
-- Searching existing memories for overlaps or conflicts
-- Reasoning about necessary memory updates or removals
-- Applying these changes to keep memory relevant and up to date
+### Mem0 memory update process
 
-MemZero supports multiple backend databases and embedding models via an abstraction layer.
+![Mem0 flow: extract memories, compare to old, recommend ADD/UPDATE/DELETE/NONE](images/slide_23.png)
+[Watch from 36:23](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2183s)
 
-### Demonstration of MemZero memory provider integration
+Mem0's memory update is a multi-step process. First, an LLM reviews the response and extracts potential new memories (e.g., "Hates snow", "Lives in NY", "Loves the sun"). Then Mem0 searches the database for related existing memories (e.g., "Lives in CA", "Loves the sun"). A second LLM call compares new and old memories and recommends actions: ADD for genuinely new facts, UPDATE when a fact has changed (e.g., moved from CA to NY), DELETE for contradicted memories, or NONE for redundant ones. This ensures memories stay current and non-duplicative. For example, if a user previously said they live in California but now says New York, the memory updates rather than storing both.
 
-![MemZero memory provider code example](images/slide_15.png)  
+### Mem0ContextProvider code
+
+![Code: Mem0ContextProvider with AsyncMemory client](images/slide_24.png)
 [Watch from 38:12](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2292s)
 
-Integrating MemZero with the agent framework requires configuring the LLM, embedding model, and optionally the database. The MemZero memory provider is then passed as a context provider to the agent. During interaction, the provider runs before and after each agent execution to retrieve relevant memories and update them based on the agent’s output. This setup enables more intelligent and concise memory management than naive storage.
+Import `Mem0ContextProvider` from `agent_framework.mem0` and `AsyncMemory` from `mem0`. Configure the Mem0 client with LLM connection details (supports Azure OpenAI, GitHub Models, and OpenAI), an embedding model, and optionally a custom database. Create the `Mem0ContextProvider` with a `user_id` and the configured client, then pass it as a `context_providers` item to the `Agent`. In testing, Mem0 stored memories like "Prefers Celsius" and "Favorite city is Tokyo" -- synthesized facts rather than raw messages. The configuration requires specifying both the LLM and embedding model separately from the agent's own model connection.
 
-### Insights from GitHub Copilot’s memory system
+### Memory in production: GitHub Copilot
 
-![GitHub Copilot memory system highlights](images/slide_16.png)  
-[Watch from 42:44](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2564s)
+![GitHub Copilot memory: citation-based verification](images/slide_25.png)
+[Watch from 42:33](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2553s)
 
-GitHub Copilot uses a clever memory system that ties memories to specific lines of source code, enabling it to mark memories obsolete when code changes. This approach maintains memory relevance in code editing contexts, ensuring the agent adapts to evolving codebases. Such domain-specific memory management strategies inspire similar implementations for other coding agents.
+GitHub Copilot's memory system ties each memory to citations (line numbers in source code) so it can verify whether referenced code still exists. A memory that can no longer be verified is removed. This is a production-grade approach to memory obsolescence -- rather than keeping memories forever or using time-based expiry, it actively checks whether the source data backing each memory is still valid. See the [blog post on building an agentic memory system for GitHub Copilot](https://github.blog/ai-and-ml/github-copilot/building-an-agentic-memory-system-for-github-copilot/) for details.
 
-### Knowledge retrieval in AI agents
+### Knowledge retrieval
 
-![Knowledge retrieval overview](images/slide_17.png)  
+![Knowledge retrieval: agent retrieves knowledge before tool calls](images/slide_27.png)
 [Watch from 43:49](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2629s)
 
-Agents often need to retrieve domain-specific knowledge before or alongside tool usage. Knowledge retrieval can be implemented as context providers that always run before the agent executes, adding relevant information to the conversation. This contrasts with knowledge retrieval as tools, which the agent may call selectively. Context providers ensure domain knowledge is consistently available for agent responses.
+Knowledge retrieval as a context provider differs from knowledge retrieval via tools. A context provider always runs before the LLM, so the agent is guaranteed to have domain-specific knowledge for every interaction. A tool only runs when the LLM decides to call it. Use a context provider when the agent is domain-specific and always needs grounding data. Use a tool when knowledge retrieval is optional or one of many possible actions. Both approaches are valid -- the choice depends on the scenario.
 
-### SQLite knowledge provider example
+### Knowledge retrieval from SQLite
 
-![SQLite knowledge provider query example](images/slide_18.png)  
-[Watch from 45:18](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2718s)
+![Code: SQLiteKnowledgeProvider subclass with before_run method](images/slide_28.png)
+[Watch from 45:17](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2717s)
 
-A simple SQLite knowledge provider can implement a `before_run` method that queries a database of domain knowledge based on the user’s input and adds retrieved information as a system message to the conversation context. This method ensures relevant knowledge is always injected before the agent generates a response, improving domain-specific accuracy.
+Create a subclass of `BaseContextProvider` and implement the `before_run` method. Extract the user's last message text, search the database, and if results are found, extend the conversation messages with the formatted results. Pass the provider to the `Agent` as a `context_providers` item. In the demo, a SQLite database contains outdoor gear products. When the user asks about hiking gear, the provider finds matching products and adds them to the context. When asked about surfboards, no matches are found and the agent responds accordingly.
 
-### Hybrid search techniques with PostgreSQL
+### Hybrid search with keyword and vector retrieval
 
-![Hybrid search with PostgreSQL](images/slide_19.png)  
+![Hybrid search: keyword + vector search merged with RRF](images/slide_29.png)
 [Watch from 47:08](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2828s)
 
-Hybrid search combines keyword (full-text) and vector search to retrieve the most relevant documents. PostgreSQL supports both and can merge results using algorithms like reciprocal rank fusion. This approach balances precise keyword matches with semantic similarity, enhancing retrieval quality for knowledge stores. Hybrid search is a best practice for effective agent knowledge retrieval.
+Hybrid search combines keyword search (matching exact terms) and vector search (matching semantic similarity) to get the best results. Each search returns a ranked list of results, which are merged using Reciprocal Rank Fusion (RRF). This captures both exact keyword matches and semantically similar results that may use different terminology. Hybrid search is a best practice for any retrieval system.
 
-### Query rewriting for improved knowledge retrieval
+### Knowledge retrieval from PostgreSQL
 
-![Query rewriting for search](images/slide_20.png)  
+![Code: PostgreSQL hybrid search with semantic and keyword CTEs](images/slide_30.png)
+[Watch from 47:42](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2862s)
+
+PostgreSQL supports both full-text search (via `tsvector` and `tsquery`) and vector search (via `pgvector`). The hybrid search query uses two CTEs: `semantic_search` ranks results by vector distance using `<=>` operator, and `keyword_search` ranks by `ts_rank_cd` score. A `FULL OUTER JOIN` merges results using RRF scoring: `1.0 / (60 + rank)` for each search type, summed together. The top results by combined score are returned.
+
+### Query rewriting for multi-turn conversations
+
+![Query rewriting: LLM rewrites conversation into optimal search query](images/slide_31.png)
+[Watch from 48:28](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2908s)
+
+When a context provider receives a multi-turn conversation, the most recent user message may lack context. For example, "What similar gear do you have for snowy situations?" only makes sense in the context of a prior conversation about rain protection and hiking. A query rewriting step uses an LLM to transform the full conversation into an optimal search query like "protective jackets and boots for hiking in snow." This improves retrieval quality significantly. Note that if knowledge retrieval is implemented as a tool instead of a context provider, the LLM naturally handles query rewriting when deciding the tool arguments.
+
+### Query rewriting in a context provider
+
+![Code: PostgresQueryRewriteProvider with LLM-based query rewriting](images/slide_32.png)
+[Watch from 49:00](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2940s)
+
+The `PostgresQueryRewriteProvider` subclass collects all user and assistant messages from the conversation, sends them to an LLM to rewrite into a search query, then uses that query to search the database. This adds an extra LLM call but produces better search results by incorporating the full conversation context.
+
+### Knowledge retrieval with Azure AI Search
+
+![Azure AI Search knowledge base: query planning, multi-source, reflection](images/slide_33.png)
 [Watch from 49:47](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=2987s)
 
-For multi-turn conversations, rewriting the user query optimizes search effectiveness. Instead of using just the most recent user message, the entire conversation is condensed into an optimized search query by an LLM before querying the knowledge store. This additional LLM call improves retrieval relevance by incorporating conversation context into the search input.
+Azure AI Search's knowledge base feature combines query planning, hybrid search with semantic re-ranking, multi-source retrieval (Search Indexes, OneLake, SharePoint, Bing), iterative retrieval with a reflection step, and answer synthesis. It handles query rewriting automatically. This is a production-grade solution that encapsulates all the retrieval best practices shown earlier into a managed service.
 
-### Azure AI Search knowledge base integration
+### AzureAISearchContextProvider code
 
-![Azure AI Search knowledge base](images/slide_21.png)  
-[Watch from 50:28](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3028s)
+![Code: AzureAISearchContextProvider in agentic mode](images/slide_34.png)
+[Watch from 50:22](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3022s)
 
-Azure AI Search offers a fully managed knowledge base with built-in features like hybrid search, multi-source querying, parallel searches, iterative retrieval (reflection), and query rewriting. Its deep integration with the agent framework allows easy setup with minimal code, providing a production-ready knowledge provider that enhances retrieval performance and scalability. However, it requires an Azure setup and cannot run within GitHub Codespaces.
+Import `AzureAISearchContextProvider` from `agent_framework.azure`. Configure it with an endpoint, credential (`DefaultAzureCredential`), knowledge base name, and mode (`"agentic"` for the full iterative retrieval pipeline). Pass it as a `context_providers` item. Use it within an `async with` block. This requires an Azure AI Search resource with a configured knowledge base -- it will not work in GitHub Codespaces without Azure setup. The key takeaway: context providers always run, tools run only when the LLM decides to call them.
 
-### Key takeaways on knowledge retrieval
+### Context management
 
-![Knowledge retrieval summary](images/slide_22.png)  
-[Watch from 51:18](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3078s)
-
-Knowledge can be retrieved either as always-on context providers or as selectively-invoked tools. Context providers run before each agent interaction, ensuring consistent domain knowledge availability, whereas tools are called conditionally. Deciding between the two depends on the agent’s use case and whether knowledge should be persistently injected or dynamically queried.
-
-### Context management challenges and context window limits
-
-![Context window size and limitations](images/slide_23.png)  
+![Context window sizes: GPT-3 at 2K to Claude Opus 4.6 at 1M](images/slide_36.png)
 [Watch from 52:05](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3125s)
 
-LLMs have finite context windows limiting input token size. Early models handled 4,000 to 12,000 tokens, while newer models support 128,000 to 1 million tokens. Despite larger windows, sending excessive or irrelevant context decreases response quality and increases cost. Efficient context management requires filtering and condensing input to fit within these limits while preserving relevance.
+Every LLM has a finite context window -- the maximum input tokens it can process. Context windows have grown dramatically (GPT-3 at 2K tokens to Claude Opus 4.6 at 1M), but three problems remain. First, the windows are still finite (128K-2M). Second, LLM accuracy degrades as context grows -- research (including "Lost in the Middle" and Chroma's context rot research) shows that more input information leads to more missed details. Third, more tokens means higher cost and slower responses. The goal is to send only relevant context to the LLM.
 
-### Context compaction and summarization middleware
+### Context compaction with summarization
 
-![Summarization middleware architecture](images/slide_24.png)  
+![Summarization: when context hits 75%, summarize to reduce size](images/slide_38.png)
 [Watch from 54:01](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3241s)
 
-Context compaction summarizes long conversations into concise messages to stay within token limits. This is implemented as middleware intercepting agent runs. When token usage exceeds a threshold, the middleware calls an LLM to generate a summary that replaces the detailed conversation history. This process can be repeated over time, enabling effectively infinite conversations with manageable context size. Configuring the frequency and storage of summarized data is a design decision.
+When the context approaches a threshold (e.g., 75% of the context window), the conversation is sent to an LLM for summarization. The summary replaces the original messages, dramatically reducing context size. This enables effectively infinite conversations because the history keeps getting compacted. Implementation decisions include how often to summarize, what to prioritize in the summary, and whether to store original messages elsewhere for later reference. This is the same technique used by GitHub Copilot when it displays "compacting conversation."
 
-### Using sub-agents to reduce context size
+### Summarization middleware architecture
 
-![Coordinator agent with sub-agents](images/slide_25.png)  
+![SummarizationMiddleware: before_run checks threshold, summarizes, after_run tracks tokens](images/slide_39.png)
+[Watch from 55:00](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3300s)
+
+Middleware in agent framework intercepts stages of the agent's processing pipeline. The `SummarizationMiddleware` works in three phases: before the agent runs, it checks if token usage exceeds the threshold and if so, summarizes the history and replaces messages with the summary; during the agent run, it calls `call_next()` to proceed normally; after the agent runs, it tracks the total tokens used for the next threshold check.
+
+### Summarization middleware code
+
+![Code: SummarizationMiddleware class with process method](images/slide_40.png)
+[Watch from 56:13](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3373s)
+
+The `SummarizationMiddleware` subclass of `AgentMiddleware` keeps a running `context_tokens` count and a `token_threshold`. In the `process` method, if `context_tokens` exceeds the threshold, it gets all messages from session state, calls an LLM to summarize them, and replaces the session's messages with a single summary message prefixed with `[Summary]`. After `call_next()` runs the agent, it updates `context_tokens` from the response's `usage_details["total_token_count"]`. In the demo, the threshold is set very low (500 tokens) to trigger summarization frequently; in production, set it to a percentage of the model's context window (e.g., 75%).
+
+### Context reduction with sub-agents
+
+![Single agent with growing context vs. coordinator with sub-agent summaries](images/slide_41.png)
 [Watch from 58:55](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3535s)
 
-Sub-agents handle specialized tasks or large data (e.g., searching large code files) and return summaries to a coordinator agent. This design reduces the main agent’s context size by delegating heavy retrieval or processing to sub-agents whose outputs are condensed. It is especially useful when tool call results are large and helps maintain focused, efficient context for the primary agent’s decisions.
+A single agent accumulates all tool call results in its context, which can grow large when tools return substantial data (e.g., reading entire source files). A coordinator-agent pattern delegates research to sub-agents that return only summaries. The coordinator never sees raw file contents -- only concise summaries. This keeps the coordinator's context small and focused, producing better responses because the LLM is not overwhelmed by irrelevant details.
 
-### Summary and closing remarks
+### Coordinator agent with sub-agents code
 
-![Closing slide and resources](images/slide_26.png)  
+![Code: research_agent as sub-agent, coordinator uses research_codebase tool](images/slide_42.png)
+[Watch from 01:00:21](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3621s)
+
+Define a research sub-agent with file-reading tools and instructions to return summaries under 200 words. Wrap it in a tool function (`research_codebase`) that runs the sub-agent and returns `response.text`. The coordinator agent has only the `research_codebase` tool and answers questions based on the summaries it receives. This is a common pattern for code agents where research can involve reading large files.
+
+### Sub-agent token usage comparison
+
+![Token comparison: single agent 8,312 total vs coordinator 1,137 + sub-agent 9,074](images/slide_43.png)
 [Watch from 01:01:07](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3667s)
 
-The session concludes with encouragement to join office hours for further questions, access resources including recordings and write-ups, and upcoming sessions on monitoring and evaluating agents. Participants are invited to provide feedback through surveys and continue exploring the agent framework’s capabilities.
+Comparing a single agent to the coordinator + sub-agent pattern: the single agent used 6,714 input tokens and 1,598 output tokens (8,312 total). The coordinator used only 623 input tokens and 514 output tokens (1,137 total), while the sub-agent used 8,494 input and 580 output (9,074 total). The coordinator received far fewer tokens, enabling a more focused response. The total token count across both agents was similar, but the coordinator's small context window is the key advantage -- especially in multi-turn conversations where context compounds with each turn. Both approaches produced high-quality answers.
+
+### When to use sub-agents
+
+![Guidelines: use sub-agents for large outputs, skip for simple tool calls](images/slide_44.png)
+[Watch from 01:01:48](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3708s)
+
+Use sub-agents when tools return large outputs, tasks require multiple chained tool calls, the main agent has multiple responsibilities, conversations are long-running and multi-turn, or sub-tasks need specialized instructions. Skip sub-agents when tool responses are small and simple, a single tool call gets the answer, the main agent needs to see raw tool output, or low latency is critical (sub-agents add an extra LLM round-trip).
+
+### Next steps
+
+![Next steps: registration, recordings, office hours, schedule](images/slide_45.png)
+[Watch from 01:02:07](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=3727s)
+
+Register for the series at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series). Watch past recordings at [aka.ms/pythonagents/resources](https://aka.ms/pythonagents/resources). Join office hours after each session in Discord at [aka.ms/pythonai/oh](https://aka.ms/pythonai/oh). The next session covers monitoring and evaluating agents.
+
 
 ## Live Chat Q&A
 
@@ -377,7 +460,7 @@ Links shared:
 
 Links shared:
 
-- [Python + Agents Session 1 write-up](../session-1/outputs/writeup.md)
+- [Python + Agents Session 1 write-up](https://github.com/pamelafox/presentation-writeups/blob/main/presentations/python-agents-session1/outputs/writeup.md)
 
 ### VS Code often forgets you have a venv in your project — does it swap that knowledge out of its memory?
 
