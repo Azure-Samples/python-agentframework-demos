@@ -55,9 +55,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 # --- Modelos de salida estructurada ---
@@ -149,7 +147,7 @@ async def main() -> None:
             "Haz preguntas de clarificación UNA A LA VEZ sobre: preferencias de destino, fechas de viaje, "
             "presupuesto, intereses/actividades y tamaño del grupo.\n"
             "Una vez que tengas suficiente información (al menos destino, fechas y presupuesto), "
-            'produce un itinerario final.\n\n'
+            "produce un itinerario final.\n\n"
             "DEBES devolver SOLO un objeto JSON que coincida con este esquema:\n"
             '  {"status": "need_info", "question": "tu pregunta aquí"}\n'
             "  O\n"
@@ -170,7 +168,7 @@ async def main() -> None:
     )
 
     user_request = "Quiero ir a algún lugar cálido el próximo mes"
-    print(f"▶️  Iniciando planificador de viajes con: \"{user_request}\"\n")
+    print(f'▶️  Iniciando planificador de viajes con: "{user_request}"\n')
 
     stream = workflow.run(user_request, stream=True)
 

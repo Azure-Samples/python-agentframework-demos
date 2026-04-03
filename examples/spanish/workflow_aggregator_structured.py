@@ -44,9 +44,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 class CandidateReview(BaseModel):
@@ -92,11 +90,13 @@ class ExtractReview(Executor):
         messages = [
             Message(
                 role="system",
-                contents=[(
-                    "Eres un revisor de un comité de contratación. "
-                    "Con base en las siguientes evaluaciones de entrevistadores, "
-                    "produce una revisión estructurada del candidato."
-                )],
+                contents=[
+                    (
+                        "Eres un revisor de un comité de contratación. "
+                        "Con base en las siguientes evaluaciones de entrevistadores, "
+                        "produce una revisión estructurada del candidato."
+                    )
+                ],
             ),
             Message(role="user", contents=[combined]),
         ]

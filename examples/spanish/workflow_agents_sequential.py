@@ -50,9 +50,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
 
 writer = Agent(
     client=client,
@@ -79,7 +77,7 @@ workflow = SequentialBuilder(participants=[writer, reviewer]).build()
 
 
 async def main():
-    prompt = "Escribe una publicación de LinkedIn de un párrafo: \"El error de workflow de IA que casi todos los equipos cometen.\""
+    prompt = 'Escribe una publicación de LinkedIn de un párrafo: "El error de workflow de IA que casi todos los equipos cometen."'
     logger.info("Prompt: %s", prompt)
     events = await workflow.run(prompt)
     outputs = events.get_outputs()

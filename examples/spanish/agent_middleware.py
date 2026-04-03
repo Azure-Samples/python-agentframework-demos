@@ -47,17 +47,16 @@ from datetime import datetime
 from typing import Annotated
 
 from agent_framework import (
-    AgentMiddleware,
-    AgentContext,
-    AgentResponse,
     Agent,
-    tool,
+    AgentContext,
+    AgentMiddleware,
+    AgentResponse,
     ChatContext,
-    Message,
     ChatMiddleware,
     FunctionInvocationContext,
     FunctionMiddleware,
-
+    Message,
+    tool,
 )
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
@@ -139,9 +138,7 @@ async def logging_function_middleware(
     call_next: Callable[[], Awaitable[None]],
 ) -> None:
     """Middleware de función que registra llamadas y resultados."""
-    logger.info(
-        f"[🪵 Registro][ Function Middleware] Llamando a {context.function.name} con args: {context.arguments}"
-    )
+    logger.info(f"[🪵 Registro][ Function Middleware] Llamando a {context.function.name} con args: {context.arguments}")
 
     await call_next()
 

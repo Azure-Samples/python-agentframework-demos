@@ -186,8 +186,7 @@ class SummarizationMiddleware(AgentMiddleware):
             history = session.state.get(InMemoryHistoryProvider.DEFAULT_SOURCE_ID, {}).get("messages", [])
             if len(history) > 2:
                 logger.info(
-                    "[📝 Summarization] Token usage (%d) exceeds threshold (%d). "
-                    "Summarizing %d history messages...",
+                    "[📝 Summarization] Token usage (%d) exceeds threshold (%d). " "Summarizing %d history messages...",
                     self.context_tokens,
                     self.token_threshold,
                     len(history),

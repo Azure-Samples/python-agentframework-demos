@@ -42,9 +42,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 class Ticket(BaseModel):
@@ -69,11 +67,13 @@ class ParseTicketExecutor(Executor):
         messages = [
             Message(
                 role="system",
-                contents=[(
-                    "Eres un clasificador de tickets de soporte. Dado un mensaje de un cliente, "
-                    "determina si describe un bug, si se relaciona con billing y si es urgente. "
-                    "Devuelve la clasificación como JSON estructurado."
-                )],
+                contents=[
+                    (
+                        "Eres un clasificador de tickets de soporte. Dado un mensaje de un cliente, "
+                        "determina si describe un bug, si se relaciona con billing y si es urgente. "
+                        "Devuelve la clasificación como JSON estructurado."
+                    )
+                ],
             ),
             Message(role="user", contents=[text]),
         ]

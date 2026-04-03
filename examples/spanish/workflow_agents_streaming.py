@@ -49,9 +49,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
 
 writer = Agent(
     client=client,
@@ -77,7 +75,7 @@ workflow = WorkflowBuilder(name="EscritorRevisor", start_executor=writer).add_ed
 
 
 async def main():
-    prompt = "Escribe una publicación corta de LinkedIn: \"4 trabajos que los agentes de IA están transformando silenciosamente este año.\""
+    prompt = 'Escribe una publicación corta de LinkedIn: "4 trabajos que los agentes de IA están transformando silenciosamente este año."'
     print(f"💬 Solicitud: {prompt}\n")
 
     async for event in workflow.run(prompt, stream=True):

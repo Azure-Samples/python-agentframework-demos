@@ -51,7 +51,10 @@ submitted_reports: list[dict[str, str]] = []
 
 receipts_db: dict[str, dict[str, str]] = {
     "R-001": {
-        "vendor": "Librería Nacional", "amount": "$142.50", "category": "Útiles de Oficina", "date": "2026-03-01",
+        "vendor": "Librería Nacional",
+        "amount": "$142.50",
+        "category": "Útiles de Oficina",
+        "date": "2026-03-01",
     },
     "R-002": {"vendor": "LATAM Airlines", "amount": "$489.00", "category": "Viajes", "date": "2026-02-28"},
     "R-003": {"vendor": "Rappi", "amount": "$32.75", "category": "Comidas", "date": "2026-03-03"},

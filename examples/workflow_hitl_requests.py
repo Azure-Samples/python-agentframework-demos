@@ -51,9 +51,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 # --- HITL request dataclass ---
@@ -130,7 +128,7 @@ async def main() -> None:
     )
 
     first_message = "What are some fun things to do in Seattle?"
-    print(f"▶️  Starting chat with: \"{first_message}\"")
+    print(f'▶️  Starting chat with: "{first_message}"')
 
     stream = workflow.run(first_message, stream=True)
 

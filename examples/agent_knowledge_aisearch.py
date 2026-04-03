@@ -106,6 +106,7 @@ agent = Agent(
     context_providers=[search_provider],
 )
 
+
 async def main() -> None:
     """Demonstrate Azure AI Search RAG in a multi-turn conversation."""
     async with search_provider:

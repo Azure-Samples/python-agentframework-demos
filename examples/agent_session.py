@@ -38,7 +38,9 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    )
 
 
 @tool
@@ -62,13 +64,14 @@ async def example_without_session() -> None:
     """Without a session, each call is independent — the agent has no memory of prior messages."""
     print("\n[bold]=== Without Session (No Memory) ===[/bold]")
 
-    print(f"[blue]User:[/blue] What's the weather like in Seattle?")
+    print("[blue]User:[/blue] What's the weather like in Seattle?")
     response = await agent.run("What's the weather like in Seattle?")
     print(f"[green]Agent:[/green] {response.text}")
 
-    print(f"\n[blue]User:[/blue] What was the last city I asked about?")
+    print("\n[blue]User:[/blue] What was the last city I asked about?")
     response = await agent.run("What was the last city I asked about?")
     print(f"[green]Agent:[/green] {response.text}")
+
 
 async def example_with_session() -> None:
     """With a session, the agent maintains context across multiple messages."""
@@ -76,15 +79,15 @@ async def example_with_session() -> None:
 
     session = agent.create_session()
 
-    print(f"[blue]User:[/blue] What's the weather like in Tokyo?")
+    print("[blue]User:[/blue] What's the weather like in Tokyo?")
     response = await agent.run("What's the weather like in Tokyo?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
-    print(f"\n[blue]User:[/blue] How about London?")
+    print("\n[blue]User:[/blue] How about London?")
     response = await agent.run("How about London?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
-    print(f"\n[blue]User:[/blue] Which of those cities has better weather?")
+    print("\n[blue]User:[/blue] Which of those cities has better weather?")
     response = await agent.run("Which of those cities has better weather?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
@@ -95,7 +98,7 @@ async def example_session_across_agents() -> None:
 
     session = agent.create_session()
 
-    print(f"[blue]User:[/blue] What's the weather in Paris?")
+    print("[blue]User:[/blue] What's the weather in Paris?")
     response = await agent.run("What's the weather in Paris?", session=session)
     print(f"[green]Agent 1:[/green] {response.text}")
 
@@ -106,7 +109,7 @@ async def example_session_across_agents() -> None:
         tools=[get_weather],
     )
 
-    print(f"\n[blue]User:[/blue] What was the last city I asked about?")
+    print("\n[blue]User:[/blue] What was the last city I asked about?")
     response = await agent2.run("What was the last city I asked about?", session=session)
     print(f"[green]Agent 2:[/green] {response.text}")
 

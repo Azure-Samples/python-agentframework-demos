@@ -19,12 +19,13 @@ dependencies = [
     "pgvector",
     "markitdown[pdf]",
     "azure-ai-evaluation[redteam]>=1.15.0",
-    "agent-framework-core @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/core",
-    "agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/devui",
-    "agent-framework-redis @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/redis",
-    "agent-framework-mem0 @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/mem0",
-    "agent-framework-azure-ai-search @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/azure-ai-search",
-    "agent-framework-orchestrations @ git+https://github.com/microsoft/agent-framework.git@11628c3166a1845683c5aef1e0d389eb862bcbaa#subdirectory=python/packages/orchestrations",
+    "agent-framework-core==1.0.0",
+    "agent-framework-openai==1.0.0",
+    "agent-framework-devui==1.0.0b260402",
+    "agent-framework-redis==1.0.0b260402",
+    "agent-framework-mem0==1.0.0b260402",
+    "agent-framework-azure-ai-search==1.0.0b260402",
+    "agent-framework-orchestrations==1.0.0b260402",
 ]
 
 [tool.uv]

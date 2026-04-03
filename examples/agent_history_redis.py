@@ -99,8 +99,7 @@ async def main() -> None:
     except Exception as e:
         logger.error(f"Cannot connect to Redis at {REDIS_URL}: {e}")
         logger.error(
-            "Ensure Redis is running (e.g. via the dev container"
-            " or 'docker run -p 6379:6379 redis:7-alpine')."
+            "Ensure Redis is running (e.g. via the dev container" " or 'docker run -p 6379:6379 redis:7-alpine')."
         )
         return
     finally:

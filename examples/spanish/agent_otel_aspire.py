@@ -65,9 +65,7 @@ def get_weather(
 
 @tool
 def get_current_time(
-    timezone_name: Annotated[
-        str, Field(description="Timezone name, e.g. 'US/Eastern', 'America/Mexico_City', 'UTC'")
-    ],
+    timezone_name: Annotated[str, Field(description="Timezone name, e.g. 'US/Eastern', 'America/Mexico_City', 'UTC'")],
 ) -> str:
     """Devuelve la fecha y hora actual en UTC (timezone_name es solo para contexto de visualización)."""
     logger.info(f"Obteniendo la hora actual para {timezone_name}")

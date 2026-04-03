@@ -62,9 +62,7 @@ def get_weather(
 
 
 agent = Agent(
-    client=client,
-    instructions="You're an informational agent. Answer questions cheerfully.",
-    tools=[get_weather]
+    client=client, instructions="You're an informational agent. Answer questions cheerfully.", tools=[get_weather]
 )
 
 

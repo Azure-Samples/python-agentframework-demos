@@ -84,7 +84,9 @@ PROJECT_DIR = os.path.join(os.path.dirname(__file__))
 
 @tool
 def list_project_files(
-    directory: Annotated[str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")],
+    directory: Annotated[
+        str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")
+    ],
 ) -> str:
     """Lista todos los archivos en el directorio indicado dentro de la carpeta examples."""
     logger.info("[📂 Herramienta] list_project_files('%s')", directory)
@@ -97,7 +99,9 @@ def list_project_files(
 
 @tool
 def read_project_file(
-    filepath: Annotated[str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")],
+    filepath: Annotated[
+        str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")
+    ],
 ) -> str:
     """Lee y devuelve el contenido completo de un archivo dentro de la carpeta examples."""
     logger.info("[📄 Herramienta] read_project_file('%s')", filepath)
@@ -110,7 +114,9 @@ def read_project_file(
 
 @tool
 def search_project_files(
-    query: Annotated[str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")],
+    query: Annotated[
+        str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")
+    ],
 ) -> str:
     """Busca en todos los .py dentro de examples las líneas que contengan el texto."""
     logger.info("[🔍 Herramienta] search_project_files('%s')", query)
@@ -145,7 +151,10 @@ agent = Agent(
 
 # ── Query ────────────────────────────────────────────────────────────
 
-USER_QUERY = "¿Qué patrones distintos de middleware se usan en este proyecto? Lee los archivos relevantes para averiguarlo."
+USER_QUERY = (
+    "¿Qué patrones distintos de middleware se usan en este proyecto? Lee los archivos relevantes para averiguarlo."
+)
+
 
 async def main() -> None:
     """Ejecuta una consulta y registra el uso de tokens."""

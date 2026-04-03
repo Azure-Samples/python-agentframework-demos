@@ -13,7 +13,9 @@ DB_PATH = "chat_history.sqlite3"
 
 parser = argparse.ArgumentParser(description="View sessions and messages in the SQLite chat history database.")
 parser.add_argument("--db", default=DB_PATH, help="Path to the SQLite database (default: chat_history.sqlite3)")
-parser.add_argument("--values", action="store_true", help="Show messages for each session (default: list sessions only)")
+parser.add_argument(
+    "--values", action="store_true", help="Show messages for each session (default: list sessions only)"
+)
 args = parser.parse_args()
 
 try:
@@ -45,12 +47,10 @@ if not args.values:
     sys.exit(0)
 
 for session_id, count in sessions:
-    rows = conn.execute(
-        "SELECT message_json FROM messages WHERE session_id = ? ORDER BY id", (session_id,)
-    ).fetchall()
+    rows = conn.execute("SELECT message_json FROM messages WHERE session_id = ? ORDER BY id", (session_id,)).fetchall()
 
     parts = []
-    for message_json, in rows:
+    for (message_json,) in rows:
         try:
             formatted = json.dumps(json.loads(message_json), indent=2)
         except json.JSONDecodeError:

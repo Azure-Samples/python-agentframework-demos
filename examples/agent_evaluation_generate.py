@@ -16,7 +16,6 @@ from typing import Annotated
 
 from agent_framework import Agent, tool
 from agent_framework.openai import OpenAIChatClient
-from azure.ai.evaluation import AzureOpenAIModelConfiguration, OpenAIModelConfiguration
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field

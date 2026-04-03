@@ -11,7 +11,9 @@ from rich.syntax import Syntax
 
 DB_PATH = "chat_history.sqlite3"
 
-parser = argparse.ArgumentParser(description="Ver sesiones y mensajes en la base de datos SQLite del historial de chat.")
+parser = argparse.ArgumentParser(
+    description="Ver sesiones y mensajes en la base de datos SQLite del historial de chat."
+)
 parser.add_argument(
     "--db",
     default=DB_PATH,
@@ -53,12 +55,10 @@ if not args.values:
     sys.exit(0)
 
 for session_id, count in sessions:
-    rows = conn.execute(
-        "SELECT message_json FROM messages WHERE session_id = ? ORDER BY id", (session_id,)
-    ).fetchall()
+    rows = conn.execute("SELECT message_json FROM messages WHERE session_id = ? ORDER BY id", (session_id,)).fetchall()
 
     parts = []
-    for message_json, in rows:
+    for (message_json,) in rows:
         try:
             formatted = json.dumps(json.loads(message_json), indent=2)
         except json.JSONDecodeError:

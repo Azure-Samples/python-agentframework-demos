@@ -35,15 +35,14 @@ import sys
 from typing import Any
 
 import psycopg
-from openai import OpenAI
-from pgvector.psycopg import register_vector
-
 from agent_framework import Agent, AgentSession, ContextProvider, Message, SessionContext, SupportsAgentRun
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential as SyncDefaultAzureCredential
 from azure.identity import get_bearer_token_provider as sync_get_bearer_token_provider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
+from openai import OpenAI
+from pgvector.psycopg import register_vector
 from rich import print
 from rich.logging import RichHandler
 
@@ -64,7 +63,9 @@ if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     async_token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     sync_credential = SyncDefaultAzureCredential()
-    sync_token_provider = sync_get_bearer_token_provider(sync_credential, "https://cognitiveservices.azure.com/.default")
+    sync_token_provider = sync_get_bearer_token_provider(
+        sync_credential, "https://cognitiveservices.azure.com/.default"
+    )
     chat_client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=async_token_provider,
@@ -196,9 +197,7 @@ def create_knowledge_db(conn: psycopg.Connection) -> None:
         )
         """
     )
-    conn.execute(
-        "CREATE INDEX ON products USING GIN (to_tsvector('spanish', name || ' ' || description))"
-    )
+    conn.execute("CREATE INDEX ON products USING GIN (to_tsvector('spanish', name || ' ' || description))")
 
     logger.info("[📚 Conocimiento] Generando embeddings para %d productos...", len(PRODUCTS))
     for product in PRODUCTS:
@@ -289,9 +288,7 @@ class PostgresQueryRewriteProvider(ContextProvider):
             Una consulta de búsqueda concisa y autocontenida.
         """
         # Formatear conversación para el reescritor
-        conversation_text = "\n".join(
-            f"{msg.role}: {msg.text}" for msg in conversation_messages if msg.text
-        )
+        conversation_text = "\n".join(f"{msg.role}: {msg.text}" for msg in conversation_messages if msg.text)
 
         rewrite_messages = [
             Message(role="system", contents=[QUERY_REWRITE_PROMPT]),

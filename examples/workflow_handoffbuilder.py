@@ -139,9 +139,7 @@ async def main() -> None:
 
         async for event in workflow.run(prompt, stream=True):
             if event.type == "handoff_sent":
-                console.print(
-                    f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n"
-                )
+                console.print(f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n")
 
             elif event.type == "output" and isinstance(event.data, AgentResponseUpdate):
                 if event.executor_id != current_agent:

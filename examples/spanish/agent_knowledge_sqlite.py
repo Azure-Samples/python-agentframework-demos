@@ -255,7 +255,9 @@ class SQLiteKnowledgeProvider(ContextProvider):
         state: dict[str, Any],
     ) -> None:
         """Busca en la base de conocimiento con el último mensaje del usuario e inyecta resultados."""
-        user_text = next((msg.text for msg in reversed(context.input_messages) if msg.role == "user" and msg.text), None)
+        user_text = next(
+            (msg.text for msg in reversed(context.input_messages) if msg.role == "user" and msg.text), None
+        )
         if not user_text:
             return
 

@@ -304,9 +304,7 @@ async def main():
 
     intent_result = intent_evaluator(query=eval_query, response=eval_response, tool_definitions=tool_definitions)
     completeness_result = completeness_evaluator(response=response.text, ground_truth=ground_truth)
-    adherence_result = adherence_evaluator(
-        query=eval_query, response=eval_response, tool_definitions=tool_definitions
-    )
+    adherence_result = adherence_evaluator(query=eval_query, response=eval_response, tool_definitions=tool_definitions)
     tool_accuracy_result = tool_accuracy_evaluator(
         query=eval_query, response=eval_response, tool_definitions=tool_definitions
     )

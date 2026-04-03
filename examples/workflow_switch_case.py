@@ -52,9 +52,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 # Pydantic model used as response_format — the LLM must return valid JSON
@@ -108,9 +106,7 @@ def is_complaint(msg: Any) -> bool:
 async def handle_question(result: ClassifyResult, ctx: WorkflowContext[Never, str]) -> None:
     """Route a question to the Q&A team."""
     await ctx.yield_output(
-        f"❓ Question routed to Q&A team\n\n"
-        f"Message: {result.original_message}\n"
-        f"Reason: {result.reasoning}"
+        f"❓ Question routed to Q&A team\n\n" f"Message: {result.original_message}\n" f"Reason: {result.reasoning}"
     )
 
 

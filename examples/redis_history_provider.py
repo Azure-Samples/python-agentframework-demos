@@ -4,12 +4,10 @@ import asyncio
 import os
 from uuid import uuid4
 
-from agent_framework.openai import OpenAIChatClient
-from agent_framework.redis import RedisHistoryProvider
-from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from agent_framework import Agent, AgentSession
 from agent_framework.openai import OpenAIChatClient
 from agent_framework.redis import RedisHistoryProvider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -35,6 +33,7 @@ client = OpenAIChatClient(
     api_key=token_provider,
     model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
 )
+
 
 async def example_manual_memory_store() -> None:
     """Basic example of using Redis history provider."""
@@ -255,7 +254,7 @@ async def main() -> None:
     print("Prerequisites:")
     print("- Redis server running (set REDIS_URL env var or default localhost:6379)")
     print("=" * 50)
-    
+
     try:
         # Run all examples
         await example_manual_memory_store()

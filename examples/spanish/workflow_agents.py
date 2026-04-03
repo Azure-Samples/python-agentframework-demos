@@ -40,9 +40,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
 
 # Crea los agentes de IA — se pasan directamente como ejecutores al WorkflowBuilder,
 # igual que las subclases de Executor en workflow_rag_ingest.py.
@@ -73,7 +71,7 @@ workflow = WorkflowBuilder(start_executor=writer).add_edge(writer, reviewer).bui
 
 
 async def main():
-    prompt = "Escribe una publicación de LinkedIn de 2 frases: \"Por qué tu piloto de IA se ve bien, pero falla en producción.\""
+    prompt = 'Escribe una publicación de LinkedIn de 2 frases: "Por qué tu piloto de IA se ve bien, pero falla en producción."'
     print(f"Prompt: {prompt}\n")
     events = await workflow.run(prompt)
 

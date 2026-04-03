@@ -70,14 +70,14 @@ By the end, we saw how to build agents that were not only capable but context‑
 
 ### Overview of the Python and agent series
 
-![Series overview slide](images/slide_1.png)  
+![Series overview slide](images/slide_1.png)
 [Watch from 00:05](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=5s)
 
 This series consists of six sessions teaching how to build AI agents using the Microsoft agent framework. It spans two weeks and progressively introduces tools, techniques, and best practices for creating intelligent agents capable of handling complex tasks. Registration remains open during the series, providing access to session recordings and resources.
 
 ### Adding context and memory to agents
 
-![Session title slide](images/slide_2.png)  
+![Session title slide](images/slide_2.png)
 [Watch from 00:58](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=58s)
 
 This is the second session of a six-part Python + Agents series. The full schedule covers building a first agent, adding context and memory, monitoring and evaluating agents, building AI-driven workflows, orchestrating multi-agent workflows, and adding a human-in-the-loop. Register at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series).

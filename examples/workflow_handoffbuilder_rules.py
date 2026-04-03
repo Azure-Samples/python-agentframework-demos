@@ -23,13 +23,12 @@ import logging
 import os
 import sys
 
-from pydantic import Field
-
 from agent_framework import Agent, AgentResponseUpdate, tool
 from agent_framework.openai import OpenAIChatClient
 from agent_framework.orchestrations import HandoffBuilder
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
+from pydantic import Field
 from rich.console import Console
 
 logging.basicConfig(level=logging.WARNING)
@@ -172,9 +171,7 @@ async def main() -> None:
 
     async for event in workflow.run(request, stream=True):
         if event.type == "handoff_sent":
-            console.print(
-                f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n"
-            )
+            console.print(f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n")
 
         elif event.type == "output" and isinstance(event.data, AgentResponseUpdate):
             if event.executor_id != current_agent:

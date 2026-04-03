@@ -39,9 +39,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 class ReviewResult(BaseModel):
@@ -157,7 +155,7 @@ workflow = (
 
 
 async def main():
-    prompt = "Escribe una publicación de LinkedIn de un párrafo: \"El error de workflow de IA que casi todos los equipos cometen.\""
+    prompt = 'Escribe una publicación de LinkedIn de un párrafo: "El error de workflow de IA que casi todos los equipos cometen."'
     print(f"Prompt: {prompt}\n")
 
     events = await workflow.run(prompt)

@@ -98,9 +98,12 @@ subagent_usage_log: list[dict] = []
 
 # ── Herramientas de archivos (solo para el subagente) ────────────────
 
+
 @tool
 def list_project_files(
-    directory: Annotated[str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")],
+    directory: Annotated[
+        str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")
+    ],
 ) -> str:
     """Lista todos los archivos en el directorio indicado dentro de la carpeta examples."""
     logger.info("[📂 Herramienta] list_project_files('%s')", directory)
@@ -113,7 +116,9 @@ def list_project_files(
 
 @tool
 def read_project_file(
-    filepath: Annotated[str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")],
+    filepath: Annotated[
+        str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")
+    ],
 ) -> str:
     """Lee y devuelve el contenido completo de un archivo dentro de la carpeta examples."""
     logger.info("[📄 Herramienta] read_project_file('%s')", filepath)
@@ -126,7 +131,9 @@ def read_project_file(
 
 @tool
 def search_project_files(
-    query: Annotated[str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")],
+    query: Annotated[
+        str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")
+    ],
 ) -> str:
     """Busca en todos los .py dentro de examples las líneas que contengan el texto."""
     logger.info("[🔍 Herramienta] search_project_files('%s')", query)
@@ -187,7 +194,9 @@ async def research_codebase(
     total_t = usage.get("total_token_count", 0) or 0
     logger.info(
         "[🔬 Subagente] Listo. El subagente usó input=%d output=%d total=%d tokens",
-        input_t, output_t, total_t,
+        input_t,
+        output_t,
+        total_t,
     )
 
     return response.text or "No findings."
@@ -211,7 +220,9 @@ coordinator = Agent(
 
 # ── Query ────────────────────────────────────────────────────────────
 
-USER_QUERY = "¿Qué patrones distintos de middleware se usan en este proyecto? Lee los archivos relevantes para averiguarlo."
+USER_QUERY = (
+    "¿Qué patrones distintos de middleware se usan en este proyecto? Lee los archivos relevantes para averiguarlo."
+)
 
 
 async def main() -> None:
@@ -238,7 +249,9 @@ async def main() -> None:
     sub_total = sum((u.get("total_token_count", 0) or 0) for u in subagent_usage_log)
 
     print("[bold]── Uso de tokens ──[/bold]")
-    print(f"[yellow]  Tokens del coordinador:[/yellow]  input={coord_input:,}  output={coord_output:,}  total={coord_total:,}")
+    print(
+        f"[yellow]  Tokens del coordinador:[/yellow]  input={coord_input:,}  output={coord_output:,}  total={coord_total:,}"
+    )
     print(f"[yellow]  Tokens del subagente:[/yellow]  input={sub_input:,}  output={sub_output:,}  total={sub_total:,}")
     print()
     print("[dim]Los tokens de entrada del coordinador son mucho menores porque nunca vio[/dim]")

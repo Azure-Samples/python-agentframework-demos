@@ -42,9 +42,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 # --- Herramientas ---
@@ -57,7 +55,9 @@ def process_return(
 ) -> str:
     """Procesa una devolución de producto para el pedido indicado."""
     print(f"\n🔧 [Herramienta llamada: process_return(order_number={order_number}, return_type={return_type})]")
-    return f"Devolución procesada para el pedido {order_number}: {return_type} aprobado. Correo de confirmación enviado."
+    return (
+        f"Devolución procesada para el pedido {order_number}: {return_type} aprobado. Correo de confirmación enviado."
+    )
 
 
 # --- Agentes ---
@@ -110,8 +110,7 @@ workflow = (
         name="customer_support",
         participants=[triage_agent, order_agent, return_agent],
         termination_condition=lambda conversation: (
-            len(conversation) > 0
-            and any(word in conversation[-1].text.lower() for word in ("adiós", "adios", "chao"))
+            len(conversation) > 0 and any(word in conversation[-1].text.lower() for word in ("adiós", "adios", "chao"))
         ),
     )
     .with_start_agent(triage_agent)

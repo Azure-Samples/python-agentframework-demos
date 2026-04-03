@@ -24,11 +24,11 @@ from agent_framework import (
     Executor,
     Message,
     WorkflowBuilder,
+    WorkflowCheckpoint,
     WorkflowContext,
     handler,
     response_handler,
 )
-from agent_framework import WorkflowCheckpoint
 from agent_framework.exceptions import WorkflowCheckpointException
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
@@ -59,18 +59,22 @@ class PostgresCheckpointStorage:
 
     def _ensure_table(self) -> None:
         with psycopg.connect(self._conninfo) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS workflow_checkpoints (
                     id TEXT PRIMARY KEY,
                     workflow_name TEXT NOT NULL,
                     timestamp TEXT NOT NULL,
                     data BYTEA NOT NULL
                 )
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_checkpoints_workflow
                 ON workflow_checkpoints (workflow_name, timestamp)
-            """)
+            """
+            )
 
     async def save(self, checkpoint: WorkflowCheckpoint) -> str:
         """Guarda un checkpoint en PostgreSQL."""
@@ -80,17 +84,16 @@ class PostgresCheckpointStorage:
                 """INSERT INTO workflow_checkpoints (id, workflow_name, timestamp, data)
                    VALUES (%s, %s, %s, %s)
                    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data""",
-                (checkpoint.checkpoint_id, checkpoint.workflow_name,
-                 checkpoint.timestamp, data),
+                (checkpoint.checkpoint_id, checkpoint.workflow_name, checkpoint.timestamp, data),
             )
         return checkpoint.checkpoint_id
 
     async def load(self, checkpoint_id: str) -> WorkflowCheckpoint:
         """Carga un checkpoint por ID."""
         async with await psycopg.AsyncConnection.connect(self._conninfo, row_factory=dict_row) as conn:
-            row = await (await conn.execute(
-                "SELECT data FROM workflow_checkpoints WHERE id = %s", (checkpoint_id,)
-            )).fetchone()
+            row = await (
+                await conn.execute("SELECT data FROM workflow_checkpoints WHERE id = %s", (checkpoint_id,))
+            ).fetchone()
         if row is None:
             raise WorkflowCheckpointException(f"No se encontró checkpoint con ID {checkpoint_id}")
         return pickle.loads(row["data"])  # noqa: S301
@@ -98,28 +101,30 @@ class PostgresCheckpointStorage:
     async def list_checkpoints(self, *, workflow_name: str) -> list[WorkflowCheckpoint]:
         """Lista todos los checkpoints de un workflow, ordenados por timestamp."""
         async with await psycopg.AsyncConnection.connect(self._conninfo, row_factory=dict_row) as conn:
-            rows = await (await conn.execute(
-                "SELECT data FROM workflow_checkpoints WHERE workflow_name = %s ORDER BY timestamp",
-                (workflow_name,),
-            )).fetchall()
+            rows = await (
+                await conn.execute(
+                    "SELECT data FROM workflow_checkpoints WHERE workflow_name = %s ORDER BY timestamp",
+                    (workflow_name,),
+                )
+            ).fetchall()
         return [pickle.loads(r["data"]) for r in rows]  # noqa: S301
 
     async def delete(self, checkpoint_id: str) -> bool:
         """Elimina un checkpoint por ID."""
         async with await psycopg.AsyncConnection.connect(self._conninfo) as conn:
-            result = await conn.execute(
-                "DELETE FROM workflow_checkpoints WHERE id = %s", (checkpoint_id,)
-            )
+            result = await conn.execute("DELETE FROM workflow_checkpoints WHERE id = %s", (checkpoint_id,))
         return result.rowcount > 0
 
     async def get_latest(self, *, workflow_name: str) -> WorkflowCheckpoint | None:
         """Obtiene el checkpoint más reciente de un workflow."""
         async with await psycopg.AsyncConnection.connect(self._conninfo, row_factory=dict_row) as conn:
-            row = await (await conn.execute(
-                """SELECT data FROM workflow_checkpoints
+            row = await (
+                await conn.execute(
+                    """SELECT data FROM workflow_checkpoints
                    WHERE workflow_name = %s ORDER BY timestamp DESC LIMIT 1""",
-                (workflow_name,),
-            )).fetchone()
+                    (workflow_name,),
+                )
+            ).fetchone()
         if row is None:
             return None
         return pickle.loads(row["data"])  # noqa: S301
@@ -127,10 +132,12 @@ class PostgresCheckpointStorage:
     async def list_checkpoint_ids(self, *, workflow_name: str) -> list[str]:
         """Lista los IDs de checkpoints de un workflow."""
         async with await psycopg.AsyncConnection.connect(self._conninfo, row_factory=dict_row) as conn:
-            rows = await (await conn.execute(
-                "SELECT id FROM workflow_checkpoints WHERE workflow_name = %s ORDER BY timestamp",
-                (workflow_name,),
-            )).fetchall()
+            rows = await (
+                await conn.execute(
+                    "SELECT id FROM workflow_checkpoints WHERE workflow_name = %s ORDER BY timestamp",
+                    (workflow_name,),
+                )
+            ).fetchall()
         return [r["id"] for r in rows]
 
 
@@ -154,9 +161,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 # --- Executors (igual que workflow_hitl_checkpoint.py) ---
@@ -276,7 +281,7 @@ async def main() -> None:
     # Verifica si hay checkpoints existentes para reanudar
     checkpoint = await storage.get_latest(workflow_name=workflow.name)
     if checkpoint:
-        print(f"📂 Se encontró un checkpoint en PostgreSQL. Reanudando desde el más reciente.")
+        print("📂 Se encontró un checkpoint en PostgreSQL. Reanudando desde el más reciente.")
         stream = workflow.run(checkpoint_id=checkpoint.checkpoint_id, stream=True)
     else:
         brief = (

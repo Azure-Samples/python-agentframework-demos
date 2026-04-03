@@ -44,9 +44,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 class RankedSlogan(BaseModel):
@@ -90,19 +88,25 @@ class RankerExecutor(Executor):
         lines = []
         for result in results:
             slogan = result.agent_response.text.strip().strip("\"'").split("\n")[0].strip().strip("\"'")
-            lines.append(f"- [{result.executor_id}]: \"{slogan}\"")
+            lines.append(f'- [{result.executor_id}]: "{slogan}"')
 
         messages = [
-            Message(role="system", contents=[(
-                "You are a senior creative director judging marketing slogans. "
-                "Given a list of candidate slogans, rank them from best to worst. "
-                "For each slogan, give a 1-10 score and a one-sentence justification "
-                "evaluating creativity, memorability, clarity, and brand fit."
-            )]),
+            Message(
+                role="system",
+                contents=[
+                    (
+                        "You are a senior creative director judging marketing slogans. "
+                        "Given a list of candidate slogans, rank them from best to worst. "
+                        "For each slogan, give a 1-10 score and a one-sentence justification "
+                        "evaluating creativity, memorability, clarity, and brand fit."
+                    )
+                ],
+            ),
             Message(role="user", contents=["Candidate slogans:\n" + "\n".join(lines)]),
         ]
         response = await self._client.get_response(messages, options={"response_format": RankedSlogans})
         await ctx.yield_output(response.value)
+
 
 dispatcher = DispatchPrompt(id="dispatcher")
 
@@ -161,7 +165,7 @@ async def main() -> None:
     events = await workflow.run(prompt)
     for output in events.get_outputs():
         for entry in output.rankings:
-            print(f"#{entry.rank} (score {entry.score}) [{entry.agent_name}]: \"{entry.slogan}\"")
+            print(f'#{entry.rank} (score {entry.score}) [{entry.agent_name}]: "{entry.slogan}"')
             print(f"   {entry.justification}\n")
 
     if async_credential:

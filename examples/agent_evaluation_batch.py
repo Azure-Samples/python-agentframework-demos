@@ -13,6 +13,7 @@ import logging
 import os
 from pathlib import Path
 
+import rich
 from azure.ai.evaluation import (
     AzureOpenAIModelConfiguration,
     IntentResolutionEvaluator,
@@ -23,7 +24,6 @@ from azure.ai.evaluation import (
     evaluate,
 )
 from dotenv import load_dotenv
-import rich
 from rich.logging import RichHandler
 from rich.table import Table
 

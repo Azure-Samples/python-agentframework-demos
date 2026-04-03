@@ -44,9 +44,7 @@ elif API_HOST == "github":
         model=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"))
 
 
 class RankedSlogan(BaseModel):
@@ -90,17 +88,19 @@ class RankerExecutor(Executor):
         lines = []
         for result in results:
             slogan = result.agent_response.text.strip().strip("\"'").split("\n")[0].strip().strip("\"'")
-            lines.append(f"- [{result.executor_id}]: \"{slogan}\"")
+            lines.append(f'- [{result.executor_id}]: "{slogan}"')
 
         messages = [
             Message(
                 role="system",
-                contents=[(
-                    "Eres un director creativo senior evaluando eslóganes de marketing. "
-                    "Dada una lista de eslóganes candidatos, ordénalos del mejor al peor. "
-                    "Para cada eslogan, da una puntuación de 1 a 10 y una justificación de una sola oración "
-                    "evaluando creatividad, memorabilidad, claridad y encaje con la marca."
-                )],
+                contents=[
+                    (
+                        "Eres un director creativo senior evaluando eslóganes de marketing. "
+                        "Dada una lista de eslóganes candidatos, ordénalos del mejor al peor. "
+                        "Para cada eslogan, da una puntuación de 1 a 10 y una justificación de una sola oración "
+                        "evaluando creatividad, memorabilidad, claridad y encaje con la marca."
+                    )
+                ],
             ),
             Message(role="user", contents=["Eslóganes candidatos:\n" + "\n".join(lines)]),
         ]
@@ -165,7 +165,7 @@ async def main() -> None:
     events = await workflow.run(prompt)
     for output in events.get_outputs():
         for entry in output.rankings:
-            print(f"#{entry.rank} (puntaje {entry.score}) [{entry.agent_name}]: \"{entry.slogan}\"")
+            print(f'#{entry.rank} (puntaje {entry.score}) [{entry.agent_name}]: "{entry.slogan}"')
             print(f"   {entry.justification}\n")
 
     if async_credential:

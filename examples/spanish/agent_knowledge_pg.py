@@ -32,15 +32,14 @@ import sys
 from typing import Any
 
 import psycopg
-from openai import OpenAI
-from pgvector.psycopg import register_vector
-
 from agent_framework import Agent, AgentSession, ContextProvider, Message, SessionContext, SupportsAgentRun
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential as SyncDefaultAzureCredential
 from azure.identity import get_bearer_token_provider as sync_get_bearer_token_provider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
+from openai import OpenAI
+from pgvector.psycopg import register_vector
 from rich import print
 from rich.logging import RichHandler
 
@@ -63,7 +62,9 @@ if API_HOST == "azure":
     async_token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     # Sync credential for the OpenAI SDK embed client
     sync_credential = SyncDefaultAzureCredential()
-    sync_token_provider = sync_get_bearer_token_provider(sync_credential, "https://cognitiveservices.azure.com/.default")
+    sync_token_provider = sync_get_bearer_token_provider(
+        sync_credential, "https://cognitiveservices.azure.com/.default"
+    )
     chat_client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=async_token_provider,
@@ -196,9 +197,7 @@ def create_knowledge_db(conn: psycopg.Connection) -> None:
         """
     )
     # Índice GIN para búsqueda de texto completo sobre nombre + descripción
-    conn.execute(
-        "CREATE INDEX ON products USING GIN (to_tsvector('spanish', name || ' ' || description))"
-    )
+    conn.execute("CREATE INDEX ON products USING GIN (to_tsvector('spanish', name || ' ' || description))")
 
     logger.info("[📚 Conocimiento] Generando embeddings para %d productos...", len(PRODUCTS))
     for product in PRODUCTS:
@@ -344,7 +343,9 @@ agent = Agent(
 async def main() -> None:
     """Demuestra búsqueda híbrida RAG con varias consultas."""
     print("\n[bold]=== Recuperación de Conocimiento (RAG) con Búsqueda Híbrida en PostgreSQL ===[/bold]")
-    print("[dim]El agente usa pgvector (semántico) + tsvector (palabras clave) con RRF antes de cada llamada al LLM.[/dim]\n")
+    print(
+        "[dim]El agente usa pgvector (semántico) + tsvector (palabras clave) con RRF antes de cada llamada al LLM.[/dim]\n"
+    )
 
     # Consulta 1: Debería encontrar botas de senderismo y bastones de trekking
     print("[blue]Usuario:[/blue] Estoy planeando una excursión. ¿Qué botas y bastones me recomiendas?")

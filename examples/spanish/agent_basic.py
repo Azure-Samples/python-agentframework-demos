@@ -32,9 +32,7 @@ else:
     )
 
 
-agent = Agent(
-    client=client, instructions="Eres un agente informativo. Responde a las preguntas con buena onda."
-)
+agent = Agent(client=client, instructions="Eres un agente informativo. Responde a las preguntas con buena onda.")
 
 
 async def main():
