@@ -1,7 +1,7 @@
 <!--
 ---
 name: Python Agent Framework Demos
-description: Colección de ejemplos en Python para Microsoft Agent Framework usando Azure AI Foundry.
+description: Colección de ejemplos en Python para Microsoft Agent Framework usando Microsoft Foundry.
 languages:
 - python
 products:
@@ -18,14 +18,14 @@ urlFragment: python-agentframework-demos
 [![Abrir en GitHub Codespaces](https://img.shields.io/static/v1?style=for-the-badge&label=GitHub+Codespaces&message=Open&color=brightgreen&logo=github)](https://codespaces.new/Azure-Samples/python-agentframework-demos)
 [![Abrir en Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/Azure-Samples/python-agentframework-demos)
 
-Este repositorio ofrece ejemplos de [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/) usando LLMs de [Azure AI Foundry](https://learn.microsoft.com/azure/ai-foundry/) u otros proveedores de modelos.
+Este repositorio ofrece ejemplos de [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/) usando LLMs de [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/) u otros proveedores de modelos.
 
 * [Cómo empezar](#cómo-empezar)
   * [GitHub Codespaces](#github-codespaces)
   * [VS Code Dev Containers](#vs-code-dev-containers)
   * [Entorno local](#entorno-local)
 * [Configurar proveedores de modelos](#configurar-proveedores-de-modelos)
-  * [Usar modelos de Azure AI Foundry](#usar-modelos-de-azure-ai-foundry)
+  * [Usar modelos de Microsoft Foundry](#usar-modelos-de-microsoft-foundry)
   * [Usar modelos de OpenAI.com](#usar-modelos-de-openaicom)
 * [Ejecutar los ejemplos en Python](#ejecutar-los-ejemplos-en-python)
 * [Recursos](#recursos)
@@ -95,11 +95,11 @@ El dev container incluye un servidor Redis, que se usa en el ejemplo `agent_hist
 
 ## Configurar proveedores de modelos
 
-Estos ejemplos se pueden ejecutar con Azure AI Foundry u OpenAI.com, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
+Estos ejemplos se pueden ejecutar con Microsoft Foundry u OpenAI.com, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
 
-## Usar modelos de Azure AI Foundry
+## Usar modelos de Microsoft Foundry
 
-Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-5.4" y "text-embedding-3-large" a través de Azure AI Foundry. La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
+Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-5.4" y "text-embedding-3-large" a través de Microsoft Foundry. La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
 
 1. Asegúrate de tener instalado [Azure Developer CLI (azd)](https://aka.ms/install-azd).
 
@@ -203,7 +203,7 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | [agent_otel_aspire.py](agent_otel_aspire.py) | Un agente con trazas, métricas y logs estructurados de OpenTelemetry exportados al [Aspire Dashboard](https://aspire.dev/dashboard/standalone/). |
 | [agent_otel_appinsights.py](agent_otel_appinsights.py) | Un agente con trazas, métricas y logs estructurados de OpenTelemetry exportados a [Azure Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview). Requiere aprovisionamiento de Azure con `azd provision`. |
 | [agent_evaluation_generate.py](agent_evaluation_generate.py) | Genera datos sintéticos de evaluación para el agente planificador de viajes. |
-| [agent_evaluation.py](agent_evaluation.py) | Evalúa un agente planificador de viajes usando evaluadores de [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/concepts/evaluation-evaluators/agent-evaluators) (IntentResolution, ToolCallAccuracy, TaskAdherence, ResponseCompleteness). Opcionalmente configura `AZURE_AI_PROJECT` en `.env` para registrar resultados en [Azure AI Foundry](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/agent-evaluate-sdk). |
+| [agent_evaluation.py](agent_evaluation.py) | Evalúa un agente planificador de viajes usando evaluadores de [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/concepts/evaluation-evaluators/agent-evaluators) (IntentResolution, ToolCallAccuracy, TaskAdherence, ResponseCompleteness). Opcionalmente configura `AZURE_AI_PROJECT` en `.env` para registrar resultados en [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/agent-evaluate-sdk). |
 | [agent_evaluation_batch.py](agent_evaluation_batch.py) | Evaluación por lotes de respuestas de agentes con la función `evaluate()` de Azure AI Evaluation. |
 | [agent_redteam.py](agent_redteam.py) | Prueba de red team a un agente asesor financiero usando [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/red-teaming-agent) para evaluar su resiliencia ante ataques adversariales en categorías de riesgo (Violence, HateUnfairness, Sexual, SelfHarm). Requiere `AZURE_AI_PROJECT` en `.env`. |
 
@@ -274,7 +274,7 @@ Este ejemplo requiere la variable de entorno `APPLICATIONINSIGHTS_CONNECTION_STR
 
 **Opción A: Automática con `azd provision`**
 
-Si ejecutas `azd provision` (consulta [Usar modelos de Azure AI Foundry](#usar-modelos-de-azure-ai-foundry)), el recurso de Application Insights se provisiona automáticamente y la cadena de conexión se escribe en tu archivo `.env`.
+Si ejecutas `azd provision` (consulta [Usar modelos de Microsoft Foundry](#usar-modelos-de-microsoft-foundry)), el recurso de Application Insights se provisiona automáticamente y la cadena de conexión se escribe en tu archivo `.env`.
 
 **Opción B: Manual desde el Portal de Azure**
 

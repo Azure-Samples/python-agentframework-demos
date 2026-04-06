@@ -56,7 +56,7 @@ In the third session of the Python + Agents series, we shifted focus to two esse
 
 We began with observability, using OpenTelemetry to capture traces, metrics, and logs from agent actions. We showed how to instrument agents built with the Microsoft Agent Framework and export telemetry to local dashboards (Aspire) and managed platforms (Azure Application Insights), using the standard `gen_ai` OpenTelemetry attributes to get rich trace rendering.
 
-From there, we explored how to evaluate agent behavior using the Azure AI Evaluation SDK. We covered four built-in evaluators—tool call accuracy, intent resolution, task adherence, and response completeness—running them both individually and in bulk against data sets, with results viewable locally or in Azure AI Foundry.
+From there, we explored how to evaluate agent behavior using the Azure AI Evaluation SDK. We covered four built-in evaluators—tool call accuracy, intent resolution, task adherence, and response completeness—running them both individually and in bulk against data sets, with results viewable locally or in Microsoft Foundry.
 
 We concluded with safety evaluation through automated red teaming, using adversarial LLMs to test whether agents could withstand attacks like URL encoding, tense transformation, and other jailbreak strategies.
 
@@ -88,7 +88,7 @@ The agenda covers three topics: monitoring agents using OpenTelemetry and export
 ![Instructions for following along](images/slide_4.png)
 [Watch from 02:41](https://www.youtube.com/watch?v=3yS-G-NEBu8&t=161s)
 
-All code for the session is in the same GitHub repository used throughout the series. Creating a GitHub Codespace from the repository provides a preconfigured VS Code environment with Python dependencies and examples. A `git pull` is recommended after starting the Codespace to get the latest changes. Unlike previous sessions, some examples in this session require Azure resources that are not free—specifically Azure Application Insights and Azure AI Foundry—so not all examples can be run entirely for free in Codespaces.
+All code for the session is in the same GitHub repository used throughout the series. Creating a GitHub Codespace from the repository provides a preconfigured VS Code environment with Python dependencies and examples. A `git pull` is recommended after starting the Codespace to get the latest changes. Unlike previous sessions, some examples in this session require Azure resources that are not free—specifically Azure Application Insights and Microsoft Foundry—so not all examples can be run entirely for free in Codespaces.
 
 ### Recap: what is an AI agent
 
@@ -200,7 +200,7 @@ Multiple frameworks support automated evaluation:
 - **RAGAS** (Python) — from ExplodingGradients, a research-based startup
 - **DeepEval** (Python) — from ConfidentAI, includes an optional hosted evaluation service
 - **Langsmith** (Python) — from LangChain, requires their cloud platform
-- **OpenAI evals** (Python) — built into the OpenAI package, now integrates with both openai.com and Azure AI Foundry
+- **OpenAI evals** (Python) — built into the OpenAI package, now integrates with both openai.com and Microsoft Foundry
 
 ### Using the azure-ai-evaluation package
 
@@ -263,7 +263,7 @@ Evaluation results are saved as JSON files that can be viewed locally. For a nic
 ![AI Foundry evaluation results](images/slide_28.png)
 [Watch from 53:43](https://www.youtube.com/watch?v=3yS-G-NEBu8&t=3223s)
 
-Passing an `azure_ai_project` parameter to `evaluate()` exports results to an Azure AI Foundry project for viewing and sharing. The Foundry portal (currently only the classic UI supports viewing locally-run Python evaluation results) shows pass rates across all evaluators, individual scores with reasons, and drill-down into each run. This enables collaboration—share evaluation runs with colleagues to review failures and discuss improvements.
+Passing an `azure_ai_project` parameter to `evaluate()` exports results to an Microsoft Foundry project for viewing and sharing. The Foundry portal (currently only the classic UI supports viewing locally-run Python evaluation results) shows pass rates across all evaluators, individual scores with reasons, and drill-down into each run. This enables collaboration—share evaluation runs with colleagues to review failures and discuss improvements.
 
 ### CI/CD evaluation with GitHub Actions
 
@@ -305,7 +305,7 @@ Automated red teaming simulates human red teaming using the `azure-ai-evaluation
 ![RedTeam class configuration](images/slide_34.png)
 [Watch from 59:16](https://www.youtube.com/watch?v=3yS-G-NEBu8&t=3556s)
 
-The `RedTeam` class requires an Azure AI Foundry project because the adversarial LLM is only accessible through Foundry—its guardrails are removed, so access is restricted to this evaluation purpose. Configuration includes the Foundry project endpoint, credential, risk categories to test (Violence, HateUnfairness, Sexual, SelfHarm), and the number of adversarial questions per category.
+The `RedTeam` class requires an Microsoft Foundry project because the adversarial LLM is only accessible through Foundry—its guardrails are removed, so access is restricted to this evaluation purpose. Configuration includes the Foundry project endpoint, credential, risk categories to test (Violence, HateUnfairness, Sexual, SelfHarm), and the number of adversarial questions per category.
 
 ### Running the red-teaming scan
 

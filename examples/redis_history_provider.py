@@ -1,5 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+"""
+Redis History Provider Session Example
+
+This sample demonstrates how to use Redis as a history provider for session
+management, enabling persistent conversation history storage across sessions
+with Redis as the backend data store.
+"""
+
 import asyncio
 import os
 from uuid import uuid4
@@ -11,28 +19,27 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
-
-"""
-Redis History Provider Session Example
-
-This sample demonstrates how to use Redis as a history provider for session
-management, enabling persistent conversation history storage across sessions
-with Redis as the backend data store.
-"""
+load_dotenv(override=True)
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Default Redis URL for local Redis Stack.
 # Override via the REDIS_URL environment variable for remote or authenticated instances.
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 
-async_credential = DefaultAzureCredential()
-token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
-client = OpenAIChatClient(
-    base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
-    api_key=token_provider,
-    model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-)
+async_credential = None
+if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
+    client = OpenAIChatClient(
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
+        api_key=token_provider,
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+    )
+else:
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+    )
 
 
 async def example_manual_memory_store() -> None:
@@ -268,6 +275,9 @@ async def main() -> None:
     except Exception as e:
         print(f"Error running examples: {e}")
         raise
+    finally:
+        if async_credential:
+            await async_credential.close()
 
 
 if __name__ == "__main__":

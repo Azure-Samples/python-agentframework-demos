@@ -389,14 +389,14 @@ Yes, sessions are portable conversation histories identified by unique IDs. Diff
 The [python-agentframework-demos](https://github.com/Azure-Samples/python-agentframework-demos) repo README has instructions for configuring model providers. If you're not using GitHub Models in a Codespace, you need to set up a `.env` file. Options:
 
 - **GitHub Models locally**: Set up a personal access token as described in the README.
-- **Azure AI Foundry models**: Use the Bicep provisioning included in the repo (`azd up`) which will write the `.env` file for you automatically. Or manually create a `.env` with your endpoint and chat deployment name.
+- **Microsoft Foundry models**: Use the Bicep provisioning included in the repo (`azd up`) which will write the `.env` file for you automatically. Or manually create a `.env` with your endpoint and chat deployment name.
 - **Other providers**: OpenAI, Ollama, etc. are also supported with similar `.env` configuration.
 
 The `.env.sample` shows the required variables: endpoint and chat deployment. By default, keyless authentication is used (no API key). If you want to use a key, you'd need to modify the code. Running `azd up` as suggested in the README will provision the resources and write the `.env` file automatically.
 
 Links shared:
 
-- [python-agentframework-demos README - Using Azure AI Foundry Models](https://github.com/Azure-Samples/python-agentframework-demos?tab=readme-ov-file#using-azure-ai-foundry-models)
+- [python-agentframework-demos README - Using Microsoft Foundry Models](https://github.com/Azure-Samples/python-agentframework-demos?tab=readme-ov-file#using-microsoft-foundry-models)
 
 ### Will this series cover hosting agents in Azure, such as options and best practices?
 
@@ -499,7 +499,7 @@ In the demo, the environment info listed the OS as Linux (because of the dev con
 
 Links shared:
 
-- [Azure AI Foundry SDK overview](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?view=foundry-classic&pivots=programming-language-python)
+- [Microsoft Foundry SDK overview](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?view=foundry-classic&pivots=programming-language-python)
 
 ### Can you confirm that designing your overall project cannot be LLM agnostic?
 

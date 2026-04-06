@@ -1,12 +1,12 @@
 """Batch evaluation of agent responses using Azure AI Evaluation's evaluate() function.
 
 Reads evaluation data from a JSONL file (produced by agent_evaluation_generate.py) and runs
-all evaluators in a single batch call. Optionally logs results to Azure AI Foundry
+all evaluators in a single batch call. Optionally logs results to Microsoft Foundry
 if AZURE_AI_PROJECT is set.
 
 Usage:
     python agent_evaluation_batch.py                          # uses eval_data.jsonl
-    AZURE_AI_PROJECT=<url> python agent_evaluation_batch.py   # logs to Azure AI Foundry
+    AZURE_AI_PROJECT=<url> python agent_evaluation_batch.py   # logs to Microsoft Foundry
 """
 
 import logging
@@ -48,7 +48,7 @@ else:
         model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
-# Optional: Set AZURE_AI_PROJECT in .env to log results to Azure AI Foundry.
+# Optional: Set AZURE_AI_PROJECT in .env to log results to Microsoft Foundry.
 # Example: https://your-account.services.ai.azure.com/api/projects/your-project
 AZURE_AI_PROJECT = os.getenv("AZURE_AI_PROJECT")
 
@@ -134,7 +134,7 @@ def main() -> None:
     if AZURE_AI_PROJECT:
         studio_url = eval_result.get("studio_url")
         if studio_url:
-            print(f"\nView results in Azure AI Foundry:\n{studio_url}")
+            print(f"\nView results in Microsoft Foundry:\n{studio_url}")
     else:
         logger.info("Results saved to eval_results.json")
 

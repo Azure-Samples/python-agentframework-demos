@@ -17,14 +17,14 @@ urlFragment: python-agentframework-demos
 [![Open in GitHub Codespaces](https://img.shields.io/static/v1?style=for-the-badge&label=GitHub+Codespaces&message=Open&color=brightgreen&logo=github)](https://codespaces.new/Azure-Samples/python-agentframework-demos)
 [![Open in Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/Azure-Samples/python-agentframework-demos)
 
-This repository provides examples of [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/) using LLMs from [Azure AI Foundry](https://learn.microsoft.com/azure/ai-foundry/) or other model providers.
+This repository provides examples of [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/) using LLMs from [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/) or other model providers.
 
 * [Getting started](#getting-started)
   * [GitHub Codespaces](#github-codespaces)
   * [VS Code Dev Containers](#vs-code-dev-containers)
   * [Local environment](#local-environment)
 * [Configuring model providers](#configuring-model-providers)
-  * [Using Azure AI Foundry models](#using-azure-ai-foundry-models)
+  * [Using Microsoft Foundry models](#using-microsoft-foundry-models)
   * [Using OpenAI.com models](#using-openaicom-models)
 * [Running the Python examples](#running-the-python-examples)
 * [Resources](#resources)
@@ -94,11 +94,11 @@ The dev container includes a Redis server, which is used by the `agent_history_r
 
 ## Configuring model providers
 
-These examples can be run with Azure AI Foundry or OpenAI.com, depending on the environment variables you set. All the scripts reference the environment variables from a `.env` file, and an example `.env.sample` file is provided. Host-specific instructions are below.
+These examples can be run with Microsoft Foundry or OpenAI.com, depending on the environment variables you set. All the scripts reference the environment variables from a `.env` file, and an example `.env.sample` file is provided. Host-specific instructions are below.
 
-## Using Azure AI Foundry models
+## Using Microsoft Foundry models
 
-This project includes infrastructure as code (IaC) to provision Azure OpenAI deployments of "gpt-5.4" and "text-embedding-3-large" via Azure AI Foundry. The IaC is defined in the `infra` directory and uses the Azure Developer CLI to provision the resources.
+This project includes infrastructure as code (IaC) to provision Azure OpenAI deployments of "gpt-5.4" and "text-embedding-3-large" via Microsoft Foundry. The IaC is defined in the `infra` directory and uses the Azure Developer CLI to provision the resources.
 
 1. Make sure the [Azure Developer CLI (azd)](https://aka.ms/install-azd) is installed.
 
@@ -208,7 +208,7 @@ You can run the examples in this repository by executing the scripts in the `exa
 | [agent_otel_aspire.py](examples/agent_otel_aspire.py) | An agent with OpenTelemetry tracing, metrics, and structured logs exported to the [Aspire Dashboard](https://aspire.dev/dashboard/standalone/). |
 | [agent_otel_appinsights.py](examples/agent_otel_appinsights.py) | An agent with OpenTelemetry tracing, metrics, and structured logs exported to [Azure Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview). Requires Azure provisioning via `azd provision`. |
 | [agent_evaluation_generate.py](examples/agent_evaluation_generate.py) | Generate synthetic evaluation data for the travel planner agent. |
-| [agent_evaluation.py](examples/agent_evaluation.py) | Evaluate a travel planner agent using [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/concepts/evaluation-evaluators/agent-evaluators) agent evaluators (IntentResolution, ToolCallAccuracy, TaskAdherence, ResponseCompleteness). Optionally set `AZURE_AI_PROJECT` in `.env` to log results to [Azure AI Foundry](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/agent-evaluate-sdk). |
+| [agent_evaluation.py](examples/agent_evaluation.py) | Evaluate a travel planner agent using [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/concepts/evaluation-evaluators/agent-evaluators) agent evaluators (IntentResolution, ToolCallAccuracy, TaskAdherence, ResponseCompleteness). Optionally set `AZURE_AI_PROJECT` in `.env` to log results to [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/agent-evaluate-sdk). |
 | [agent_evaluation_batch.py](examples/agent_evaluation_batch.py) | Batch evaluation of agent responses using Azure AI Evaluation's `evaluate()` function. |
 | [agent_redteam.py](examples/agent_redteam.py) | Red-team a financial advisor agent using [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/red-teaming-agent) to test resilience against adversarial attacks across risk categories (Violence, HateUnfairness, Sexual, SelfHarm). Requires `AZURE_AI_PROJECT` in `.env`. |
 
@@ -279,7 +279,7 @@ This example requires an `APPLICATIONINSIGHTS_CONNECTION_STRING` environment var
 
 **Option A: Automatic via `azd provision`**
 
-If you run `azd provision` (see [Using Azure AI Foundry models](#using-azure-ai-foundry-models)), the Application Insights resource is provisioned automatically and the connection string is written to your `.env` file.
+If you run `azd provision` (see [Using Microsoft Foundry models](#using-microsoft-foundry-models)), the Application Insights resource is provisioned automatically and the connection string is written to your `.env` file.
 
 **Option B: Manual from the Azure Portal**
 
