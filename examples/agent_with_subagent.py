@@ -67,7 +67,7 @@ logger.setLevel(logging.INFO)
 
 # ── OpenAI client ────────────────────────────────────────────────────
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -76,16 +76,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 # ── Project root for file tools ──────────────────────────────────────
 PROJECT_DIR = os.path.join(os.path.dirname(__file__))
@@ -98,9 +92,12 @@ subagent_usage_log: list[dict] = []
 
 # ── File tools (given to the research sub-agent only) ────────────────
 
+
 @tool
 def list_project_files(
-    directory: Annotated[str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")],
+    directory: Annotated[
+        str, Field(description="Relative directory path within the examples folder, e.g. '.' or 'spanish'.")
+    ],
 ) -> str:
     """List all files in the given directory under the examples folder."""
     logger.info("[📂 Tool] list_project_files('%s')", directory)
@@ -113,7 +110,9 @@ def list_project_files(
 
 @tool
 def read_project_file(
-    filepath: Annotated[str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")],
+    filepath: Annotated[
+        str, Field(description="Relative file path within the examples folder, e.g. 'agent_middleware.py'.")
+    ],
 ) -> str:
     """Read and return the full contents of a file in the examples folder."""
     logger.info("[📄 Tool] read_project_file('%s')", filepath)
@@ -126,7 +125,9 @@ def read_project_file(
 
 @tool
 def search_project_files(
-    query: Annotated[str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")],
+    query: Annotated[
+        str, Field(description="Text to search for (case-insensitive) across all .py files in the examples folder.")
+    ],
 ) -> str:
     """Search all .py files in the examples folder for lines containing the query string."""
     logger.info("[🔍 Tool] search_project_files('%s')", query)
@@ -189,7 +190,9 @@ async def research_codebase(
     total_t = usage.get("total_token_count", 0) or 0
     logger.info(
         "[🔬 Sub-Agent] Done. Sub-agent used input=%d output=%d total=%d tokens",
-        input_t, output_t, total_t,
+        input_t,
+        output_t,
+        total_t,
     )
 
     return response.text or "No findings."
@@ -241,7 +244,9 @@ async def main() -> None:
     sub_total = sum((u.get("total_token_count", 0) or 0) for u in subagent_usage_log)
 
     print("[bold]── Token Usage ──[/bold]")
-    print(f"[yellow]  Coordinator tokens:[/yellow]  input={coord_input:,}  output={coord_output:,}  total={coord_total:,}")
+    print(
+        f"[yellow]  Coordinator tokens:[/yellow]  input={coord_input:,}  output={coord_output:,}  total={coord_total:,}"
+    )
     print(f"[yellow]  Sub-agent tokens:[/yellow]  input={sub_input:,}  output={sub_output:,}  total={sub_total:,}")
     print()
     print("[dim]The coordinator's input tokens are much lower because it never saw[/dim]")

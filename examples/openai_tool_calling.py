@@ -8,7 +8,7 @@ from rich import print
 
 # Configure OpenAI client based on environment
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -19,12 +19,9 @@ if API_HOST == "azure":
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini")
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    MODEL_NAME = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    MODEL_NAME = os.environ.get("OPENAI_MODEL", "gpt-5.4")
 
 
 def lookup_weather(city_name: str | None = None, zip_code: str | None = None) -> dict:

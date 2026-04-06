@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -37,33 +37,21 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
     eval_model_config = AzureOpenAIModelConfiguration(
         type="azure_openai",
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
         azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
-    )
-    eval_model_config = OpenAIModelConfiguration(
-        type="openai",
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model="openai/gpt-4.1-mini",
-    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
     eval_model_config = OpenAIModelConfiguration(
         type="openai",
         api_key=os.environ["OPENAI_API_KEY"],
-        model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"),
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
 
@@ -304,9 +292,7 @@ async def main():
 
     intent_result = intent_evaluator(query=eval_query, response=eval_response, tool_definitions=tool_definitions)
     completeness_result = completeness_evaluator(response=response.text, ground_truth=ground_truth)
-    adherence_result = adherence_evaluator(
-        query=eval_query, response=eval_response, tool_definitions=tool_definitions
-    )
+    adherence_result = adherence_evaluator(query=eval_query, response=eval_response, tool_definitions=tool_definitions)
     tool_accuracy_result = tool_accuracy_evaluator(
         query=eval_query, response=eval_response, tool_definitions=tool_definitions
     )

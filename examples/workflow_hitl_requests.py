@@ -32,7 +32,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configure the chat client based on the API host
 async_credential = None
@@ -42,18 +42,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 # --- HITL request dataclass ---
@@ -80,7 +72,7 @@ class ChatCoordinator(Executor):
     async def start(self, request: str, ctx: WorkflowContext[AgentExecutorRequest]) -> None:
         """Send the user's first message to the agent."""
         await ctx.send_message(
-            AgentExecutorRequest(messages=[Message("user", text=request)], should_respond=True),
+            AgentExecutorRequest(messages=[Message("user", contents=[request])], should_respond=True),
             target_id=self._agent_id,
         )
 
@@ -104,7 +96,7 @@ class ChatCoordinator(Executor):
             await ctx.yield_output("Conversation ended.")
             return
         await ctx.send_message(
-            AgentExecutorRequest(messages=[Message("user", text=reply)], should_respond=True),
+            AgentExecutorRequest(messages=[Message("user", contents=[reply])], should_respond=True),
             target_id=self._agent_id,
         )
 
@@ -130,7 +122,7 @@ async def main() -> None:
     )
 
     first_message = "What are some fun things to do in Seattle?"
-    print(f"▶️  Starting chat with: \"{first_message}\"")
+    print(f'▶️  Starting chat with: "{first_message}"')
 
     stream = workflow.run(first_message, stream=True)
 

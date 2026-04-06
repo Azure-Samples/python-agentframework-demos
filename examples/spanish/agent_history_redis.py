@@ -1,16 +1,15 @@
+# Nota: No agregar tools= a agentes con proveedores de historial — causa errores de ítems duplicados
+# con la Responses API. Ver https://github.com/microsoft/agent-framework/issues/3295
 import asyncio
 import logging
 import os
-import random
 import uuid
-from typing import Annotated
 
-from agent_framework import Agent, tool
+from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
 from agent_framework.redis import RedisHistoryProvider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
-from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
@@ -22,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 # Configurar cliente de OpenAI según el entorno
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 async_credential = None
@@ -32,28 +31,12 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
-
-
-@tool
-def get_weather(
-    city: Annotated[str, Field(description="The city to get the weather for.")],
-) -> str:
-    """Devuelve datos del clima para una ciudad."""
-    logger.info(f"Obteniendo el clima para {city}")
-    conditions = ["soleado", "nublado", "lluvioso", "tormentoso"]
-    return f"El clima en {city} está {conditions[random.randint(0, 3)]} con una máxima de {random.randint(10, 30)}°C."
 
 
 async def example_persistent_session() -> None:
@@ -68,19 +51,18 @@ async def example_persistent_session() -> None:
 
     agent = Agent(
         client=client,
-        instructions="Eres un agente de clima útil.",
-        tools=[get_weather],
+        instructions="Eres un asistente útil que recuerda nuestra conversación.",
         context_providers=[redis_provider],
     )
 
     session = agent.create_session(session_id=session_id)
 
-    print("[blue]Usuario:[/blue] ¿Cómo está el clima en Tokio?")
-    response = await agent.run("¿Cómo está el clima en Tokio?", session=session)
+    print("[blue]Usuario:[/blue] ¡Hola! Me llamo Alicia y me encanta el senderismo.")
+    response = await agent.run("¡Hola! Me llamo Alicia y me encanta el senderismo.", session=session)
     print(f"[green]Agente:[/green] {response.text}")
 
-    print("\n[blue]Usuario:[/blue] ¿Y París?")
-    response = await agent.run("¿Y París?", session=session)
+    print("\n[blue]Usuario:[/blue] ¿Qué senderos buenos hay en Colorado?")
+    response = await agent.run("¿Qué senderos buenos hay en Colorado?", session=session)
     print(f"[green]Agente:[/green] {response.text}")
 
     # Fase 2: Simular un reinicio de la app — reconectar usando el mismo session_id en Redis
@@ -89,15 +71,14 @@ async def example_persistent_session() -> None:
 
     agent2 = Agent(
         client=client,
-        instructions="Eres un agente de clima útil.",
-        tools=[get_weather],
+        instructions="Eres un asistente útil que recuerda nuestra conversación.",
         context_providers=[redis_provider2],
     )
 
     session2 = agent2.create_session(session_id=session_id)
 
-    print("[blue]Usuario:[/blue] ¿Cuál de las ciudades por las que pregunté tuvo mejor clima?")
-    response = await agent2.run("¿Cuál de las ciudades por las que pregunté tuvo mejor clima?", session=session2)
+    print("[blue]Usuario:[/blue] ¿Qué recuerdas de mí?")
+    response = await agent2.run("¿Qué recuerdas de mí?", session=session2)
     print(f"[green]Agente:[/green] {response.text}")
 
 

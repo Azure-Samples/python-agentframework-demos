@@ -1,18 +1,19 @@
 """Batch evaluation of agent responses using Azure AI Evaluation's evaluate() function.
 
 Reads evaluation data from a JSONL file (produced by agent_evaluation_generate.py) and runs
-all evaluators in a single batch call. Optionally logs results to Azure AI Foundry
+all evaluators in a single batch call. Optionally logs results to Microsoft Foundry
 if AZURE_AI_PROJECT is set.
 
 Usage:
     python agent_evaluation_batch.py                          # uses eval_data.jsonl
-    AZURE_AI_PROJECT=<url> python agent_evaluation_batch.py   # logs to Azure AI Foundry
+    AZURE_AI_PROJECT=<url> python agent_evaluation_batch.py   # logs to Microsoft Foundry
 """
 
 import logging
 import os
 from pathlib import Path
 
+import rich
 from azure.ai.evaluation import (
     AzureOpenAIModelConfiguration,
     IntentResolutionEvaluator,
@@ -23,7 +24,6 @@ from azure.ai.evaluation import (
     evaluate,
 )
 from dotenv import load_dotenv
-import rich
 from rich.logging import RichHandler
 from rich.table import Table
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     model_config = AzureOpenAIModelConfiguration(
@@ -41,21 +41,14 @@ if API_HOST == "azure":
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
         azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
-elif API_HOST == "github":
-    model_config = OpenAIModelConfiguration(
-        type="openai",
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model="openai/gpt-4.1-mini",
-    )
 else:
     model_config = OpenAIModelConfiguration(
         type="openai",
         api_key=os.environ["OPENAI_API_KEY"],
-        model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"),
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
-# Optional: Set AZURE_AI_PROJECT in .env to log results to Azure AI Foundry.
+# Optional: Set AZURE_AI_PROJECT in .env to log results to Microsoft Foundry.
 # Example: https://your-account.services.ai.azure.com/api/projects/your-project
 AZURE_AI_PROJECT = os.getenv("AZURE_AI_PROJECT")
 
@@ -141,7 +134,7 @@ def main() -> None:
     if AZURE_AI_PROJECT:
         studio_url = eval_result.get("studio_url")
         if studio_url:
-            print(f"\nView results in Azure AI Foundry:\n{studio_url}")
+            print(f"\nView results in Microsoft Foundry:\n{studio_url}")
     else:
         logger.info("Results saved to eval_results.json")
 

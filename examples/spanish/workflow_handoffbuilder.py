@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.WARNING)
 console = Console()
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configura el cliente de chat según el proveedor de API
 async_credential = None
@@ -42,17 +42,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 
@@ -140,9 +134,7 @@ async def main() -> None:
 
         async for event in workflow.run(prompt, stream=True):
             if event.type == "handoff_sent":
-                console.print(
-                    f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n"
-                )
+                console.print(f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n")
 
             elif event.type == "output" and isinstance(event.data, AgentResponseUpdate):
                 if event.executor_id != current_agent:

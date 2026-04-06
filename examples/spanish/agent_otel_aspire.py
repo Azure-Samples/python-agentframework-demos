@@ -23,9 +23,9 @@ logger.setLevel(logging.INFO)
 # Configura OpenTelemetry (lee OTEL_EXPORTER_OTLP_* y ENABLE_CONSOLE_EXPORTERS del entorno)
 configure_otel_providers(enable_sensitive_data=True)
 
-# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
+# Configura el cliente para usar Azure OpenAI u OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -34,17 +34,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 
@@ -65,9 +59,7 @@ def get_weather(
 
 @tool
 def get_current_time(
-    timezone_name: Annotated[
-        str, Field(description="Timezone name, e.g. 'US/Eastern', 'America/Mexico_City', 'UTC'")
-    ],
+    timezone_name: Annotated[str, Field(description="Timezone name, e.g. 'US/Eastern', 'America/Mexico_City', 'UTC'")],
 ) -> str:
     """Devuelve la fecha y hora actual en UTC (timezone_name es solo para contexto de visualización)."""
     logger.info(f"Obteniendo la hora actual para {timezone_name}")

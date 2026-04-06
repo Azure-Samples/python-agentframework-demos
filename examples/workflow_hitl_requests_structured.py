@@ -36,7 +36,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configure the chat client based on the API host
 async_credential = None
@@ -46,18 +46,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 # --- Structured output models ---
@@ -99,7 +91,7 @@ class TripCoordinator(Executor):
     @handler
     async def start(self, request: str, ctx: WorkflowContext[AgentExecutorRequest]) -> None:
         """Kick off the first agent turn with the user's vague request."""
-        user_msg = Message("user", text=request)
+        user_msg = Message("user", contents=[request])
         await ctx.send_message(
             AgentExecutorRequest(messages=[user_msg], should_respond=True),
             target_id=self._agent_id,
@@ -129,7 +121,7 @@ class TripCoordinator(Executor):
         ctx: WorkflowContext[AgentExecutorRequest, str],
     ) -> None:
         """Forward the human's answer back to the agent."""
-        user_msg = Message("user", text=answer)
+        user_msg = Message("user", contents=[answer])
         await ctx.send_message(
             AgentExecutorRequest(messages=[user_msg], should_respond=True),
             target_id=self._agent_id,
@@ -149,7 +141,7 @@ async def main() -> None:
             "Ask clarifying questions ONE AT A TIME about: destination preferences, travel dates, "
             "budget, interests/activities, and group size.\n"
             "Once you have enough information (at least destination, dates, and budget), "
-            'produce a final itinerary.\n\n'
+            "produce a final itinerary.\n\n"
             "You MUST return ONLY a JSON object matching this schema:\n"
             '  {"status": "need_info", "question": "your question here"}\n'
             "  OR\n"
@@ -170,7 +162,7 @@ async def main() -> None:
     )
 
     user_request = "I want to go somewhere warm next month"
-    print(f"▶️  Starting trip planner with: \"{user_request}\"\n")
+    print(f'▶️  Starting trip planner with: "{user_request}"\n')
 
     stream = workflow.run(user_request, stream=True)
 

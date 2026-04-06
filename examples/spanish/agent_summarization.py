@@ -61,7 +61,7 @@ logger.setLevel(logging.INFO)
 
 # ── Cliente de OpenAI ─────────────────────────────────────────────────
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -70,16 +70,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 # ── Tools ────────────────────────────────────────────────────────────
@@ -166,8 +160,8 @@ class SummarizationMiddleware(AgentMiddleware):
         """Llama al LLM para resumir los mensajes de la conversación."""
         conversation_text = self._format_messages_for_summary(messages)
         summary_messages = [
-            Message(role="system", text=SUMMARIZE_PROMPT),
-            Message(role="user", text=f"Resume esta conversación:\n\n{conversation_text}"),
+            Message(role="system", contents=[SUMMARIZE_PROMPT]),
+            Message(role="user", contents=[f"Resume esta conversación:\n\n{conversation_text}"]),
         ]
         response = await self.client.get_response(summary_messages)
         return response.text or "No hay resumen disponible."
@@ -185,8 +179,7 @@ class SummarizationMiddleware(AgentMiddleware):
             history = session.state.get(InMemoryHistoryProvider.DEFAULT_SOURCE_ID, {}).get("messages", [])
             if len(history) > 2:
                 logger.info(
-                    "[📝 Resumen] Uso de tokens (%d) excede el umbral (%d). "
-                    "Resumiendo %d mensajes del historial...",
+                    "[📝 Resumen] Uso de tokens (%d) excede el umbral (%d). " "Resumiendo %d mensajes del historial...",
                     self.context_tokens,
                     self.token_threshold,
                     len(history),
@@ -201,7 +194,7 @@ class SummarizationMiddleware(AgentMiddleware):
 
                 # Reemplazar el historial de la sesión con un único mensaje de resumen
                 session.state[InMemoryHistoryProvider.DEFAULT_SOURCE_ID]["messages"] = [
-                    Message(role="assistant", text=f"[Resumen de la conversación anterior]\n{summary_text}"),
+                    Message(role="assistant", contents=[f"[Resumen de la conversación anterior]\n{summary_text}"]),
                 ]
 
                 # Reiniciar contador de tokens después del resumen

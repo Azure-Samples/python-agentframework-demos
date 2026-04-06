@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Never
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configure the chat client based on the API host
 async_credential = None
@@ -35,18 +35,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 class CandidateReview(BaseModel):
@@ -92,12 +84,14 @@ class ExtractReview(Executor):
         messages = [
             Message(
                 role="system",
-                text=(
-                    "You are a hiring committee reviewer. "
-                    "Based on the following interviewer assessments, produce a structured candidate review."
-                ),
+                contents=[
+                    (
+                        "You are a hiring committee reviewer. "
+                        "Based on the following interviewer assessments, produce a structured candidate review."
+                    )
+                ],
             ),
-            Message(role="user", text=combined),
+            Message(role="user", contents=[combined]),
         ]
         response = await self._client.get_response(messages, options={"response_format": CandidateReview})
         review: CandidateReview = response.value

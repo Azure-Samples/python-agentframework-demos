@@ -21,7 +21,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configura el cliente de chat según el proveedor de API
 async_credential = None
@@ -31,18 +31,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 # Crea los agentes de IA — se pasan directamente como ejecutores al WorkflowBuilder,
 # igual que las subclases de Executor en workflow_rag_ingest.py.
@@ -73,7 +65,7 @@ workflow = WorkflowBuilder(start_executor=writer).add_edge(writer, reviewer).bui
 
 
 async def main():
-    prompt = "Escribe una publicación de LinkedIn de 2 frases: \"Por qué tu piloto de IA se ve bien, pero falla en producción.\""
+    prompt = 'Escribe una publicación de LinkedIn de 2 frases: "Por qué tu piloto de IA se ve bien, pero falla en producción."'
     print(f"Prompt: {prompt}\n")
     events = await workflow.run(prompt)
 

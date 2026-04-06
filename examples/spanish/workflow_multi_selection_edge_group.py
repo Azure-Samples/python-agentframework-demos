@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Never
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configura el cliente de chat según el proveedor de API
 async_credential = None
@@ -33,18 +33,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 class Ticket(BaseModel):
@@ -69,13 +61,15 @@ class ParseTicketExecutor(Executor):
         messages = [
             Message(
                 role="system",
-                text=(
-                    "Eres un clasificador de tickets de soporte. Dado un mensaje de un cliente, "
-                    "determina si describe un bug, si se relaciona con billing y si es urgente. "
-                    "Devuelve la clasificación como JSON estructurado."
-                ),
+                contents=[
+                    (
+                        "Eres un clasificador de tickets de soporte. Dado un mensaje de un cliente, "
+                        "determina si describe un bug, si se relaciona con billing y si es urgente. "
+                        "Devuelve la clasificación como JSON estructurado."
+                    )
+                ],
             ),
-            Message(role="user", text=text),
+            Message(role="user", contents=[text]),
         ]
         response = await self._client.get_response(messages, options={"response_format": Ticket})
         ticket: Ticket = response.value

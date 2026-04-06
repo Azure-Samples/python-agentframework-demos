@@ -70,14 +70,14 @@ By the end, we saw how to build agents that were not only capable but context‑
 
 ### Overview of the Python and agent series
 
-![Series overview slide](images/slide_1.png)  
+![Series overview slide](images/slide_1.png)
 [Watch from 00:05](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=5s)
 
 This series consists of six sessions teaching how to build AI agents using the Microsoft agent framework. It spans two weeks and progressively introduces tools, techniques, and best practices for creating intelligent agents capable of handling complex tasks. Registration remains open during the series, providing access to session recordings and resources.
 
 ### Adding context and memory to agents
 
-![Session title slide](images/slide_2.png)  
+![Session title slide](images/slide_2.png)
 [Watch from 00:58](https://www.youtube.com/watch?v=BMzI9cEaGBM&t=58s)
 
 This is the second session of a six-part Python + Agents series. The full schedule covers building a first agent, adding context and memory, monitoring and evaluating agents, building AI-driven workflows, orchestrating multi-agent workflows, and adding a human-in-the-loop. Register at [aka.ms/PythonAgents/series](https://aka.ms/PythonAgents/series).
@@ -389,14 +389,14 @@ Yes, sessions are portable conversation histories identified by unique IDs. Diff
 The [python-agentframework-demos](https://github.com/Azure-Samples/python-agentframework-demos) repo README has instructions for configuring model providers. If you're not using GitHub Models in a Codespace, you need to set up a `.env` file. Options:
 
 - **GitHub Models locally**: Set up a personal access token as described in the README.
-- **Azure AI Foundry models**: Use the Bicep provisioning included in the repo (`azd up`) which will write the `.env` file for you automatically. Or manually create a `.env` with your endpoint and chat deployment name.
+- **Microsoft Foundry models**: Use the Bicep provisioning included in the repo (`azd up`) which will write the `.env` file for you automatically. Or manually create a `.env` with your endpoint and chat deployment name.
 - **Other providers**: OpenAI, Ollama, etc. are also supported with similar `.env` configuration.
 
 The `.env.sample` shows the required variables: endpoint and chat deployment. By default, keyless authentication is used (no API key). If you want to use a key, you'd need to modify the code. Running `azd up` as suggested in the README will provision the resources and write the `.env` file automatically.
 
 Links shared:
 
-- [python-agentframework-demos README - Using Azure AI Foundry Models](https://github.com/Azure-Samples/python-agentframework-demos?tab=readme-ov-file#using-azure-ai-foundry-models)
+- [python-agentframework-demos README - Using Microsoft Foundry Models](https://github.com/Azure-Samples/python-agentframework-demos?tab=readme-ov-file#using-microsoft-foundry-models)
 
 ### Will this series cover hosting agents in Azure, such as options and best practices?
 
@@ -499,7 +499,7 @@ In the demo, the environment info listed the OS as Linux (because of the dev con
 
 Links shared:
 
-- [Azure AI Foundry SDK overview](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?view=foundry-classic&pivots=programming-language-python)
+- [Microsoft Foundry SDK overview](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?view=foundry-classic&pivots=programming-language-python)
 
 ### Can you confirm that designing your overall project cannot be LLM agnostic?
 

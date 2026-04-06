@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 
 # Configure OpenAI client based on environment
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -32,17 +32,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 
@@ -107,26 +101,6 @@ async def main() -> None:
                 "provider": "qdrant",
                 "config": {
                     "embedding_model_dims": embedding_dims,
-                },
-            },
-        }
-    elif API_HOST == "github":
-        # Use GitHub Models for both Mem0's LLM and embedder
-        mem0_config = {
-            "llm": {
-                "provider": "openai",
-                "config": {
-                    "model": os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
-                    "api_key": os.environ["GITHUB_TOKEN"],
-                    "openai_base_url": "https://models.github.ai/inference",
-                },
-            },
-            "embedder": {
-                "provider": "openai",
-                "config": {
-                    "model": "openai/text-embedding-3-small",
-                    "api_key": os.environ["GITHUB_TOKEN"],
-                    "openai_base_url": "https://models.github.ai/inference",
                 },
             },
         }

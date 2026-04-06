@@ -83,26 +83,23 @@ for key in keys:
         lines = []
         for field, val in fields.items():
             lines.append(f"[bold]{field.decode()}[/bold]: {val.decode()}")
-        print(
-            Panel("\n".join(lines), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]")
-        )
+        print(Panel("\n".join(lines), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]"))
 
     elif key_type == "set":
         members = sorted(m.decode() for m in r.smembers(key))
-        print(
-            Panel(
-                "\n".join(members), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]"
-            )
-        )
+        print(Panel("\n".join(members), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]"))
 
     elif key_type == "zset":
         items = r.zrange(key, 0, -1, withscores=True)
         lines = [f"{m.decode()}: {s}" for m, s in items]
-        print(
-            Panel("\n".join(lines), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]")
-        )
+        print(Panel("\n".join(lines), title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]"))
 
     else:
-        print(Panel(f"[dim]Tipo no soportado: {key_type}[/dim]", title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]"))
+        print(
+            Panel(
+                f"[dim]Tipo no soportado: {key_type}[/dim]",
+                title=f"[bold cyan]{key}[/bold cyan] [dim]({key_type})[/dim]",
+            )
+        )
 
     print()

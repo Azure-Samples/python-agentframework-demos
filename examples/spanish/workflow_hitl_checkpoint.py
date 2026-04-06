@@ -37,7 +37,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configura el cliente según el host de la API
 async_credential = None
@@ -47,18 +47,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-5-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-5-mini")
-    )
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 # Directorio para archivos de checkpoint (fácil de inspeccionar y eliminar)
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints"
@@ -87,7 +79,7 @@ class BriefPreparer(Executor):
             f"BRIEF: {normalized}"
         )
         await ctx.send_message(
-            AgentExecutorRequest(messages=[Message("user", text=prompt)], should_respond=True),
+            AgentExecutorRequest(messages=[Message("user", contents=[prompt])], should_respond=True),
             target_id=self._agent_id,
         )
 
@@ -139,7 +131,7 @@ class ReviewGateway(Executor):
             f"Guía del humano: {reply}"
         )
         await ctx.send_message(
-            AgentExecutorRequest(messages=[Message("user", text=prompt)], should_respond=True),
+            AgentExecutorRequest(messages=[Message("user", contents=[prompt])], should_respond=True),
             target_id=self._writer_id,
         )
 

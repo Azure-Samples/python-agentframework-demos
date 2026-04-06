@@ -16,13 +16,13 @@ Diagram:
 
 This example uses the built-in AzureAISearchContextProvider in agentic
 mode, which handles the entire retrieval pipeline — no custom
-BaseContextProvider subclass needed. Agentic mode uses Knowledge Bases
+ContextProvider subclass needed. Agentic mode uses Knowledge Bases
 for multi-hop reasoning across documents, providing accurate results
 through intelligent query planning.
 
 Requires:
   - An Azure AI Search service with a Knowledge Base
-  - An OpenAI-compatible model endpoint (Azure OpenAI, GitHub Models, or OpenAI)
+  - An OpenAI-compatible model endpoint (Azure OpenAI or OpenAI)
 
 Environment variables:
   - AZURE_SEARCH_ENDPOINT: Your Azure AI Search endpoint
@@ -55,7 +55,7 @@ logger.setLevel(logging.INFO)
 
 # ── Configuration ────────────────────────────────────────────────────
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 SEARCH_ENDPOINT = os.environ["AZURE_SEARCH_ENDPOINT"]
 KNOWLEDGE_BASE_NAME = os.environ["AZURE_SEARCH_KNOWLEDGE_BASE_NAME"]
@@ -69,17 +69,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 # ── Azure AI Search context provider ─────────────────────────────────
@@ -105,6 +99,7 @@ agent = Agent(
     ),
     context_providers=[search_provider],
 )
+
 
 async def main() -> None:
     """Demonstrate Azure AI Search RAG in a multi-turn conversation."""

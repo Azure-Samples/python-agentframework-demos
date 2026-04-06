@@ -15,13 +15,13 @@ Diagrama:
 
 Este ejemplo usa el AzureAISearchContextProvider incorporado en modo
 agentic, que maneja toda la canalización de recuperación: no necesitas
-crear una subclase de BaseContextProvider. El modo agentic usa Knowledge
+crear una subclase de ContextProvider. El modo agentic usa Knowledge
 Bases para razonamiento multi-hop entre documentos, dando resultados más
 precisos mediante planeación inteligente de consultas.
 
 Requiere:
     - Un servicio de Azure AI Search con una base de conocimiento (Knowledge Base)
-    - Un endpoint compatible con OpenAI (Azure OpenAI, GitHub Models u OpenAI)
+    - Un endpoint compatible con OpenAI (Azure OpenAI u OpenAI)
 
 Variables de entorno:
     - AZURE_SEARCH_ENDPOINT: Tu endpoint de Azure AI Search
@@ -54,7 +54,7 @@ logger.setLevel(logging.INFO)
 
 # ── Configuración ───────────────────────────────────────────────────
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 SEARCH_ENDPOINT = os.environ["AZURE_SEARCH_ENDPOINT"]
 KNOWLEDGE_BASE_NAME = os.environ["AZURE_SEARCH_KNOWLEDGE_BASE_NAME"]
@@ -68,17 +68,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 # ── Proveedor de contexto de Azure AI Search ────────────────────────
@@ -104,6 +98,7 @@ agent = Agent(
     ),
     context_providers=[search_provider],
 )
+
 
 async def main() -> None:
     """Demuestra RAG con Azure AI Search en una conversación multi-turno."""

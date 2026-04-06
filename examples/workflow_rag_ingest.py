@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 EMBEDDING_DIMENSIONS = 256  # Smaller dimension for efficiency
 
 # Configure the embedding client based on the API host
@@ -46,12 +46,6 @@ if API_HOST == "azure":
         api_key=sync_token_provider(),
     )
     embed_model = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
-elif API_HOST == "github":
-    embed_client = OpenAI(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-    )
-    embed_model = "text-embedding-3-small"
 else:
     embed_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     embed_model = "text-embedding-3-small"

@@ -47,17 +47,16 @@ from datetime import datetime
 from typing import Annotated
 
 from agent_framework import (
-    AgentMiddleware,
-    AgentContext,
-    AgentResponse,
     Agent,
-    tool,
+    AgentContext,
+    AgentMiddleware,
+    AgentResponse,
     ChatContext,
-    Message,
     ChatMiddleware,
     FunctionInvocationContext,
     FunctionMiddleware,
-
+    Message,
+    tool,
 )
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
@@ -72,9 +71,9 @@ logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, forma
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configura el cliente para usar Azure OpenAI, GitHub Models u OpenAI
+# Configura el cliente para usar Azure OpenAI u OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -83,16 +82,10 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
 
 
 # ---- Herramientas ----
@@ -139,9 +132,7 @@ async def logging_function_middleware(
     call_next: Callable[[], Awaitable[None]],
 ) -> None:
     """Middleware de función que registra llamadas y resultados."""
-    logger.info(
-        f"[🪵 Registro][ Function Middleware] Llamando a {context.function.name} con args: {context.arguments}"
-    )
+    logger.info(f"[🪵 Registro][ Function Middleware] Llamando a {context.function.name} con args: {context.arguments}")
 
     await call_next()
 
@@ -185,7 +176,7 @@ class BlockingAgentMiddleware(AgentMiddleware):
                     context.result = AgentResponse(
                         messages=[
                             Message(
-                                role="assistant", text=f"Lo siento, no puedo procesar solicitudes sobre '{word}'."
+                                role="assistant", contents=[f"Lo siento, no puedo procesar solicitudes sobre '{word}'."]
                             )
                         ]
                     )

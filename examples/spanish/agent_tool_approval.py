@@ -21,7 +21,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 # Configura el cliente según el host de la API
 async_credential = None
@@ -31,17 +31,11 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
 
@@ -51,7 +45,10 @@ submitted_reports: list[dict[str, str]] = []
 
 receipts_db: dict[str, dict[str, str]] = {
     "R-001": {
-        "vendor": "Librería Nacional", "amount": "$142.50", "category": "Útiles de Oficina", "date": "2026-03-01",
+        "vendor": "Librería Nacional",
+        "amount": "$142.50",
+        "category": "Útiles de Oficina",
+        "date": "2026-03-01",
     },
     "R-002": {"vendor": "LATAM Airlines", "amount": "$489.00", "category": "Viajes", "date": "2026-02-28"},
     "R-003": {"vendor": "Rappi", "amount": "$32.75", "category": "Comidas", "date": "2026-03-03"},

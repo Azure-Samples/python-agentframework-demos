@@ -1,16 +1,15 @@
+# Note: Do not add tools= to agents using history providers — causes duplicate item errors
+# with the Responses API. See https://github.com/microsoft/agent-framework/issues/3295
 import asyncio
 import logging
 import os
-import random
 import uuid
-from typing import Annotated
 
-from agent_framework import Agent, tool
+from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
 from agent_framework.redis import RedisHistoryProvider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
-from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
@@ -22,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 # Configure OpenAI client based on environment
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 async_credential = None
@@ -32,28 +31,12 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
-
-
-@tool
-def get_weather(
-    city: Annotated[str, Field(description="The city to get the weather for.")],
-) -> str:
-    """Returns weather data for a given city."""
-    logger.info(f"Getting weather for {city}")
-    conditions = ["sunny", "cloudy", "rainy", "stormy"]
-    return f"The weather in {city} is {conditions[random.randint(0, 3)]} with a high of {random.randint(10, 30)}°C."
 
 
 async def example_persistent_session() -> None:
@@ -68,19 +51,18 @@ async def example_persistent_session() -> None:
 
     agent = Agent(
         client=client,
-        instructions="You are a helpful weather agent.",
-        tools=[get_weather],
+        instructions="You are a helpful assistant that remembers our conversation.",
         context_providers=[redis_provider],
     )
 
     session = agent.create_session(session_id=session_id)
 
-    print("[blue]User:[/blue] What's the weather like in Tokyo?")
-    response = await agent.run("What's the weather like in Tokyo?", session=session)
+    print("[blue]User:[/blue] Hello! My name is Alice and I love hiking.")
+    response = await agent.run("Hello! My name is Alice and I love hiking.", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
-    print("\n[blue]User:[/blue] How about Paris?")
-    response = await agent.run("How about Paris?", session=session)
+    print("\n[blue]User:[/blue] What are some good trails in Colorado?")
+    response = await agent.run("What are some good trails in Colorado?", session=session)
     print(f"[green]Agent:[/green] {response.text}")
 
     # Phase 2: Simulate an application restart — reconnect using the same session ID in Redis
@@ -89,15 +71,14 @@ async def example_persistent_session() -> None:
 
     agent2 = Agent(
         client=client,
-        instructions="You are a helpful weather agent.",
-        tools=[get_weather],
+        instructions="You are a helpful assistant that remembers our conversation.",
         context_providers=[redis_provider2],
     )
 
     session2 = agent2.create_session(session_id=session_id)
 
-    print("[blue]User:[/blue] Which of the cities I asked about had better weather?")
-    response = await agent2.run("Which of the cities I asked about had better weather?", session=session2)
+    print("[blue]User:[/blue] What do you remember about me?")
+    response = await agent2.run("What do you remember about me?", session=session2)
     print(f"[green]Agent:[/green] {response.text}")
 
 
@@ -112,8 +93,7 @@ async def main() -> None:
     except Exception as e:
         logger.error(f"Cannot connect to Redis at {REDIS_URL}: {e}")
         logger.error(
-            "Ensure Redis is running (e.g. via the dev container"
-            " or 'docker run -p 6379:6379 redis:7-alpine')."
+            "Ensure Redis is running (e.g. via the dev container" " or 'docker run -p 6379:6379 redis:7-alpine')."
         )
         return
     finally:

@@ -6,7 +6,7 @@ The agent-framework GitHub repo is here:
 https://github.com/microsoft/agent-framework
 It contains both Python and .NET agent framework code, but we are only using the Python packages in this repo.
 
-MAF is changing rapidly still, so we sometimes need to check the repo changelog and issues to see if there are any breaking changes that might affect our code. 
+MAF is changing rapidly still, so we sometimes need to check the repo changelog and issues to see if there are any breaking changes that might affect our code.
 The Python changelog is here:
 https://github.com/microsoft/agent-framework/blob/main/python/CHANGELOG.md
 
@@ -92,3 +92,94 @@ def _on_response_with_body(self, request, response):
 
 HttpLoggingPolicy.on_response = _on_response_with_body
 ```
+
+## Manual test plan
+
+After upgrading dependencies or making changes across examples, use this plan to verify everything works. Run each example with `uv run python examples/<file>.py`.
+
+### No extra setup (Azure OpenAI only)
+
+These work with just `API_HOST=azure` and the standard `.env` from `azd up`:
+
+| Examples | Notes |
+|----------|-------|
+| `agent_basic.py` | Interactive chat loop |
+| `agent_tool.py`, `agent_tools.py` | Tool calling |
+| `agent_session.py` | Session persistence |
+| `agent_with_subagent.py`, `agent_without_subagent.py` | Sub-agent patterns |
+| `agent_supervisor.py` | Supervisor pattern |
+| `agent_middleware.py` | Middleware pipeline |
+| `agent_summarization.py` | Summarization middleware |
+| `agent_tool_approval.py` | Tool approval |
+| `workflow_agents.py`, `workflow_agents_sequential.py`, `workflow_agents_concurrent.py`, `workflow_agents_streaming.py` | Basic workflows |
+| `workflow_conditional.py`, `workflow_conditional_state.py`, `workflow_conditional_state_isolated.py`, `workflow_conditional_structured.py` | Conditional workflows |
+| `workflow_switch_case.py` | Switch/case workflow |
+| `workflow_converge.py`, `workflow_fan_out_fan_in_edges.py` | Converge / fan-out patterns |
+| `workflow_aggregator_ranked.py`, `workflow_aggregator_structured.py`, `workflow_aggregator_summary.py`, `workflow_aggregator_voting.py` | Aggregator workflows |
+| `workflow_multi_selection_edge_group.py` | Multi-selection edges |
+| `workflow_handoffbuilder.py`, `workflow_handoffbuilder_rules.py` | Handoff builder |
+| `workflow_hitl_handoff.py`, `workflow_hitl_requests.py`, `workflow_hitl_requests_structured.py`, `workflow_hitl_tool_approval.py` | HITL workflows |
+| `workflow_hitl_checkpoint.py` | HITL with file-based checkpoints |
+| `agent_knowledge_sqlite.py` | SQLite knowledge provider |
+| `agent_history_sqlite.py` | SQLite history provider (no tools — see [agent-framework#3295](https://github.com/microsoft/agent-framework/issues/3295)) |
+| `agent_memory_mem0.py` | Mem0 memory provider |
+
+### Requires Redis (dev container)
+
+Redis runs automatically in the dev container at `redis://redis:6379`.
+
+| Examples | Notes |
+|----------|-------|
+| `agent_history_redis.py` | Redis history provider (no tools — see [agent-framework#3295](https://github.com/microsoft/agent-framework/issues/3295)) |
+| `agent_memory_redis.py` | Redis memory provider |
+
+### Requires PostgreSQL (dev container)
+
+PostgreSQL runs automatically in the dev container at `postgresql://admin:LocalPasswordOnly@db:5432/postgres`.
+
+| Examples | Notes |
+|----------|-------|
+| `agent_knowledge_pg.py` | PG + pgvector knowledge |
+| `agent_knowledge_pg_rewrite.py` | PG knowledge with query rewrite |
+| `agent_knowledge_postgres.py` | PG knowledge (alternative) |
+| `workflow_hitl_checkpoint_pg.py` | HITL with PG-backed checkpoints |
+
+### Requires Azure AI Search
+
+Needs `AZURE_SEARCH_ENDPOINT` and `AZURE_SEARCH_KNOWLEDGE_BASE_NAME` in `.env`.
+
+| Examples | Notes |
+|----------|-------|
+| `agent_knowledge_aisearch.py` | Azure AI Search knowledge base (agentic mode) |
+
+### Requires MCP server
+
+Start the MCP server first: `uv run python examples/mcp_server.py`
+
+| Examples | Notes |
+|----------|-------|
+| `agent_mcp_local.py` | Local MCP server (stdio) |
+| `agent_mcp_remote.py` | Remote MCP server (SSE) |
+
+### Requires OTel / Aspire
+
+| Examples | Notes |
+|----------|-------|
+| `agent_otel_aspire.py` | Aspire dashboard (runs in dev container at `http://aspire-dashboard:18888`) |
+| `agent_otel_appinsights.py` | Needs `APPLICATIONINSIGHTS_CONNECTION_STRING` in `.env` |
+
+### Slow-running examples (⏱ 2–10 minutes)
+
+These take significantly longer than other examples:
+
+| Examples | Notes |
+|----------|-------|
+| `agent_evaluation.py` | Runs agent + evaluators inline. ~2–3 min. |
+| `agent_evaluation_generate.py` | Generates eval data JSONL. ~2 min. |
+| `agent_evaluation_batch.py` | Batch evaluators on JSONL. ~3–5 min. Needs `eval_data.jsonl` from `agent_evaluation_generate.py`. |
+| `agent_redteam.py` | Red team attack simulation. ~5–10 min. |
+| `workflow_magenticone.py` | Multi-agent MagenticOne orchestration. ~2–5 min. |
+
+### Spanish examples
+
+Spanish files under `examples/spanish/` mirror the English examples exactly (same code, translated strings). After changes, spot-check 3–5 Spanish files to confirm they run correctly.

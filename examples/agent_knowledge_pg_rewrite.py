@@ -26,7 +26,7 @@ query rewriting step inside the context provider's ``before_run`` method.
 
 Requires:
   - PostgreSQL with pgvector extension (see docker-compose.yml)
-  - An embedding model (GitHub Models, Azure OpenAI, or OpenAI)
+  - An embedding model (Azure OpenAI or OpenAI)
 """
 
 import asyncio
@@ -36,15 +36,14 @@ import sys
 from typing import Any
 
 import psycopg
-from openai import OpenAI
-from pgvector.psycopg import register_vector
-
-from agent_framework import Agent, AgentSession, BaseContextProvider, Message, SessionContext, SupportsAgentRun
+from agent_framework import Agent, AgentSession, ContextProvider, Message, SessionContext, SupportsAgentRun
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential as SyncDefaultAzureCredential
 from azure.identity import get_bearer_token_provider as sync_get_bearer_token_provider
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
+from openai import OpenAI
+from pgvector.psycopg import register_vector
 from rich import print
 from rich.logging import RichHandler
 
@@ -56,7 +55,7 @@ logger.setLevel(logging.INFO)
 
 # ── OpenAI clients (chat + embeddings) ───────────────────────────────
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://admin:LocalPasswordOnly@db:5432/postgres")
 EMBEDDING_DIMENSIONS = 256  # Smaller dimension for efficiency
 
@@ -65,31 +64,22 @@ if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     async_token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     sync_credential = SyncDefaultAzureCredential()
-    sync_token_provider = sync_get_bearer_token_provider(sync_credential, "https://cognitiveservices.azure.com/.default")
+    sync_token_provider = sync_get_bearer_token_provider(
+        sync_credential, "https://cognitiveservices.azure.com/.default"
+    )
     chat_client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=async_token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
     embed_client = OpenAI(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=sync_token_provider(),
     )
     embed_model = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
-elif API_HOST == "github":
-    chat_client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4.1-mini"),
-    )
-    embed_client = OpenAI(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-    )
-    embed_model = "text-embedding-3-small"
 else:
     chat_client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
     embed_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     embed_model = "text-embedding-3-small"
@@ -197,9 +187,7 @@ def create_knowledge_db(conn: psycopg.Connection) -> None:
         )
         """
     )
-    conn.execute(
-        "CREATE INDEX ON products USING GIN (to_tsvector('english', name || ' ' || description))"
-    )
+    conn.execute("CREATE INDEX ON products USING GIN (to_tsvector('english', name || ' ' || description))")
 
     logger.info("[📚 Knowledge] Generating embeddings for %d products...", len(PRODUCTS))
     for product in PRODUCTS:
@@ -257,7 +245,7 @@ QUERY_REWRITE_PROMPT = (
 # ── Context provider with query rewriting ────────────────────────────
 
 
-class PostgresQueryRewriteProvider(BaseContextProvider):
+class PostgresQueryRewriteProvider(ContextProvider):
     """Retrieves product knowledge using LLM-rewritten queries for multi-turn conversations.
 
     In a multi-turn conversation, the user's latest message often lacks
@@ -290,13 +278,11 @@ class PostgresQueryRewriteProvider(BaseContextProvider):
             A concise, self-contained search query.
         """
         # Format conversation for the rewriter
-        conversation_text = "\n".join(
-            f"{msg.role}: {msg.text}" for msg in conversation_messages if msg.text
-        )
+        conversation_text = "\n".join(f"{msg.role}: {msg.text}" for msg in conversation_messages if msg.text)
 
         rewrite_messages = [
-            Message(role="system", text=QUERY_REWRITE_PROMPT),
-            Message(role="user", text=f"Conversation:\n{conversation_text}"),
+            Message(role="system", contents=[QUERY_REWRITE_PROMPT]),
+            Message(role="user", contents=[f"Conversation:\n{conversation_text}"]),
         ]
 
         response = await self.rewrite_client.get_response(rewrite_messages)
@@ -365,7 +351,7 @@ class PostgresQueryRewriteProvider(BaseContextProvider):
 
         context.extend_messages(
             self.source_id,
-            [Message(role="user", text=self._format_results(results))],
+            [Message(role="user", contents=[self._format_results(results)])],
         )
 
 
