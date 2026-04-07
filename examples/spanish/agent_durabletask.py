@@ -70,6 +70,7 @@ dts_worker = DurableTaskSchedulerWorker(
     host_address=DTS_ENDPOINT,
     secure_channel=not DTS_ENDPOINT.startswith("http://"),
     taskhub=DTS_TASKHUB,
+    token_credential=None,
 )
 agent_worker = DurableAIAgentWorker(dts_worker)
 agent_worker.add_agent(agent)
@@ -79,6 +80,7 @@ dts_client = DurableTaskSchedulerClient(
     host_address=DTS_ENDPOINT,
     secure_channel=not DTS_ENDPOINT.startswith("http://"),
     taskhub=DTS_TASKHUB,
+    token_credential=None,
 )
 agent_client = DurableAIAgentClient(dts_client)
 
