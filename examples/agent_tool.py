@@ -31,6 +31,12 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ['OLLAMA_BASE_URL'],
+        model=os.environ["OLLAMA_MODEL"],
+        api_key=os.environ['OLLAMA_API_KEY'],        
+    )
 else:
     client = OpenAIChatClient(
         api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")

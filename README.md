@@ -66,6 +66,7 @@ The dev container includes a Redis server, which is used by the `agent_history_r
     * [Python 3.10+](https://www.python.org/downloads/)
     * [uv](https://docs.astral.sh/uv/getting-started/installation/)
     * Git
+    * Ollama - (optional for local Ollama model api call)
 
 2. Clone the repository:
 
@@ -73,8 +74,24 @@ The dev container includes a Redis server, which is used by the `agent_history_r
     git clone https://github.com/Azure-Samples/python-agentframework-demos
     cd python-agentframework-demos
     ```
+3. Create a virtual environment:
 
-3. Install the dependencies:
+    ```shell
+    python -m venv .venv
+    ```
+3. Activate the virtual environment:
+
+    ```shell
+    source .venv/bin/activate  
+    # On Windows: .venv\Scripts\activate
+    ```
+4. Install the uv:
+
+    ```shell
+    pip uv
+    ```
+
+4. Install the dependencies:
 
     ```shell
     uv sync
