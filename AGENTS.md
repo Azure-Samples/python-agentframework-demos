@@ -161,6 +161,16 @@ Start the MCP server first: `uv run python examples/mcp_server.py`
 | `agent_mcp_local.py` | Local MCP server (stdio) |
 | `agent_mcp_remote.py` | Remote MCP server (SSE) |
 
+### Requires Durable Task Scheduler (dev container)
+
+The DTS emulator runs automatically in the dev container. Outside the dev container, start it manually: `docker run -d --name dts-emulator -p 8080:8080 -p 8082:8082 mcr.microsoft.com/dts/dts-emulator:latest`
+
+Dashboard: `http://localhost:8082`
+
+| Examples | Notes |
+|----------|-------|
+| `agent_durabletask.py` | Durable Task hosted agent with automatic state persistence |
+
 ### Requires OTel / Aspire
 
 | Examples | Notes |
