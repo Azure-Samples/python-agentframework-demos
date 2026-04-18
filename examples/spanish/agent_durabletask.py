@@ -8,6 +8,10 @@ worker se detiene (simulando que el usuario se va a reiniciar su laptop), y
 un nuevo worker retoma la misma conversación sin problema — probando que DTS
 conserva el estado sin código personalizado para checkpoints.
 
+Nota: Puede que veas warnings ruidosos ("Invalid or missing created_at value",
+"StatusCode.CANCELLED") — son inofensivos y se rastrean en:
+https://github.com/microsoft/agent-framework/issues/5347
+
 Ejecución:
     uv run python examples/spanish/agent_durabletask.py
 """

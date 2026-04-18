@@ -8,6 +8,10 @@ stopped (simulating the user leaving to restart their laptop), and a new
 worker picks up the same conversation seamlessly — proving DTS preserves
 state with no custom checkpoint code.
 
+Note: You may see noisy warnings ("Invalid or missing created_at value",
+"StatusCode.CANCELLED") — these are harmless and tracked upstream:
+https://github.com/microsoft/agent-framework/issues/5347
+
 Run:
     uv run python examples/agent_durabletask.py
 """
