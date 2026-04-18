@@ -83,6 +83,9 @@ param principalId string = ''
 @description('Non-empty if the deployment is running on GitHub Actions')
 param runningOnGitHub string = ''
 
+@description('Whether to deploy a Durable Task Scheduler (for agent_durabletask.py)')
+param deployDts bool = false
+
 var principalType = empty(runningOnGitHub) ? 'User' : 'ServicePrincipal'
 
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -175,6 +178,23 @@ module appInsights 'br/public:avm/res/insights/component:0.4.2' = {
   }
 }
 
+// Durable Task Scheduler (optional, for agent_durabletask.py)
+var dtsSchedulerName = '${prefix}-dts'
+var dtsTaskHubName = 'default'
+
+module dts 'dts.bicep' = if (deployDts) {
+  name: 'dts'
+  scope: resourceGroup
+  params: {
+    schedulerName: dtsSchedulerName
+    taskHubName: dtsTaskHubName
+    location: location
+    tags: tags
+    principalId: principalId
+    principalType: principalType
+  }
+}
+
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
@@ -188,3 +208,7 @@ output AZURE_OPENAI_EMBEDDING_DEPLOYMENT string = azureOpenaiEmbeddingDeployment
 
 // Specific to Application Insights
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.outputs.connectionString
+
+// Specific to Durable Task Scheduler (empty when deployDts is false)
+output DTS_ENDPOINT string = deployDts ? dts.outputs.endpoint : ''
+output DTS_TASKHUB string = deployDts ? dts.outputs.taskHubName : ''
