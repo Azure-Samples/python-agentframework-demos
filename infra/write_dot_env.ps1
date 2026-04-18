@@ -21,5 +21,9 @@ $appInsightsConnectionString = azd env get-value APPLICATIONINSIGHTS_CONNECTION_
 Add-Content -Path .env -Value "APPLICATIONINSIGHTS_CONNECTION_STRING=$appInsightsConnectionString"
 $dtsEndpoint = azd env get-value DTS_ENDPOINT
 $dtsTaskhub = azd env get-value DTS_TASKHUB
-Add-Content -Path .env -Value "DTS_ENDPOINT=$dtsEndpoint"
-Add-Content -Path .env -Value "DTS_TASKHUB=$dtsTaskhub"
+if (-not [string]::IsNullOrWhiteSpace($dtsEndpoint)) {
+    Add-Content -Path .env -Value "DTS_ENDPOINT=$dtsEndpoint"
+}
+if (-not [string]::IsNullOrWhiteSpace($dtsTaskhub)) {
+    Add-Content -Path .env -Value "DTS_TASKHUB=$dtsTaskhub"
+}

@@ -6,12 +6,14 @@ param tags object = {}
 param principalId string
 param principalType string
 
+param schedulerIpAllowlist array = ['0.0.0.0/0']
+
 resource dts 'Microsoft.DurableTask/schedulers@2025-11-01' = {
   name: schedulerName
   location: location
   tags: tags
   properties: {
-    ipAllowlist: ['0.0.0.0/0']
+    ipAllowlist: schedulerIpAllowlist
     sku: {
       name: 'Consumption'
     }

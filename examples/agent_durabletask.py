@@ -48,8 +48,8 @@ else:
     )
 
 # DTS configuration
-DTS_ENDPOINT = os.getenv("DTS_ENDPOINT", "http://dts-emulator:8080")
-DTS_TASKHUB = os.getenv("DTS_TASKHUB", "default")
+DTS_ENDPOINT = os.getenv("DTS_ENDPOINT") or "http://dts-emulator:8080"
+DTS_TASKHUB = os.getenv("DTS_TASKHUB") or "default"
 
 PLAN_PROMPT = (
     "My laptop won't connect to Wi-Fi. "
