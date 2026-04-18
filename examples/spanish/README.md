@@ -93,6 +93,14 @@ El dev container incluye un servidor Redis, que se usa en el ejemplo `agent_hist
     docker run -d -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=LocalPasswordOnly pgvector/pgvector:pg17
     ```
 
+6. *Opcional:* Para ejecutar el ejemplo `agent_durabletask.py` localmente, necesitas el emulador DTS:
+
+    ```shell
+    docker run -d --name dts-emulator -p 8080:8080 -p 8082:8082 mcr.microsoft.com/dts/dts-emulator:latest
+    ```
+
+    El dashboard de DTS está disponible en <http://localhost:8082>. Para usar un scheduler en Azure, consulta [Desplegar el Durable Task Scheduler](#desplegar-el-durable-task-scheduler).
+
 ## Configurar proveedores de modelos
 
 Estos ejemplos se pueden ejecutar con Microsoft Foundry u OpenAI.com, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
@@ -206,6 +214,7 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | [agent_evaluation.py](agent_evaluation.py) | Evalúa un agente planificador de viajes usando evaluadores de [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/concepts/evaluation-evaluators/agent-evaluators) (IntentResolution, ToolCallAccuracy, TaskAdherence, ResponseCompleteness). Opcionalmente configura `AZURE_AI_PROJECT` en `.env` para registrar resultados en [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/agent-evaluate-sdk). |
 | [agent_evaluation_batch.py](agent_evaluation_batch.py) | Evaluación por lotes de respuestas de agentes con la función `evaluate()` de Azure AI Evaluation. |
 | [agent_redteam.py](agent_redteam.py) | Prueba de red team a un agente asesor financiero usando [Azure AI Evaluation](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/red-teaming-agent) para evaluar su resiliencia ante ataques adversariales en categorías de riesgo (Violence, HateUnfairness, Sexual, SelfHarm). Requiere `AZURE_AI_PROJECT` en `.env`. |
+| [agent_durabletask.py](agent_durabletask.py) | Persistencia con Durable Task — la conversación de un agente de soporte técnico sobrevive un reinicio del worker vía [Durable Task Scheduler](https://learn.microsoft.com/azure/durable-task-scheduler/). |
 
 ## Usar el Aspire Dashboard para telemetría
 
@@ -301,6 +310,32 @@ Después de ejecutar el ejemplo, navega a tu recurso de Application Insights en 
 * **Rendimiento**: Analiza duraciones de operaciones e identifica cuellos de botella.
 
 Los datos de telemetría pueden tardar entre 2 y 5 minutos en aparecer en el portal.
+
+## Desplegar el Durable Task Scheduler
+
+El ejemplo `agent_durabletask.py` funciona directamente con el emulador DTS local (incluido en el dev container). Para usar un [Durable Task Scheduler](https://learn.microsoft.com/azure/durable-task-scheduler/) en Azure:
+
+1. Habilita el despliegue opcional de DTS:
+
+    ```shell
+    azd env set DEPLOY_DTS true
+    ```
+
+2. Aprovisiona (o re-aprovisiona) los recursos:
+
+    ```shell
+    azd provision
+    ```
+
+    Esto crea un scheduler DTS, task hub y asignación de rol RBAC. Las variables `DTS_ENDPOINT` y `DTS_TASKHUB` se escriben automáticamente en tu `.env`.
+
+3. Ejecuta el ejemplo:
+
+    ```shell
+    uv run python examples/spanish/agent_durabletask.py
+    ```
+
+El dashboard de Azure DTS está disponible en <https://dashboard.durabletask.io/>.
 
 ## Recursos
 
