@@ -13,3 +13,5 @@ echo "AZURE_OPENAI_CHAT_MODEL=$(azd env get-value AZURE_OPENAI_CHAT_MODEL)" >> .
 echo "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=$(azd env get-value AZURE_OPENAI_EMBEDDING_DEPLOYMENT)" >> .env
 echo "AZURE_OPENAI_EMBEDDING_MODEL=$(azd env get-value AZURE_OPENAI_EMBEDDING_MODEL)" >> .env
 echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$(azd env get-value APPLICATIONINSIGHTS_CONNECTION_STRING)" >> .env
+echo "DTS_ENDPOINT=$(azd env get-value DTS_ENDPOINT)" >> .env
+echo "DTS_TASKHUB=$(azd env get-value DTS_TASKHUB)" >> .env

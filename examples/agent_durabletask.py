@@ -1,101 +1,147 @@
-"""Durable Task hosted agent.
+"""Durable Task persistence demo — IT support scenario.
 
-Demonstrates hosting an agent via the Durable Task Scheduler (DTS), which
-provides automatic state persistence and a distributed worker-client
-architecture. Conversation state survives worker restarts with zero custom
-checkpoint code -- DTS handles it all.
+Demonstrates: DurableTaskSchedulerWorker, DurableAIAgentClient,
+DurableAgentSession.to_dict/from_dict, and automatic state persistence.
 
-This example runs both the worker and client in a single process for
-simplicity. In production you would run them separately, potentially on
-different machines.
-
-Prerequisites:
-    The DTS emulator runs automatically in the dev container at
-    http://dts-emulator:8080. Outside the dev container, start it manually:
-
-    docker run -d --name dts-emulator -p 8080:8080 -p 8082:8082 \
-        mcr.microsoft.com/dts/dts-emulator:latest
-
-    DTS dashboard: http://localhost:8082 (or http://dts-emulator:8082 in dev container)
+An IT support agent begins troubleshooting a Wi-Fi issue, the worker is
+stopped (simulating the user leaving to restart their laptop), and a new
+worker picks up the same conversation seamlessly — proving DTS preserves
+state with no custom checkpoint code.
 
 Run:
     uv run python examples/agent_durabletask.py
-
-For more DTS patterns (multi-agent, orchestrations, HITL, streaming),
-see: https://github.com/microsoft/agent-framework/tree/main/python/samples/04-hosting/durabletask
 """
 
+import asyncio
 import os
 
 from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
-from agent_framework_durabletask import DurableAIAgentClient, DurableAIAgentWorker
+from agent_framework_durabletask import DurableAIAgentClient, DurableAIAgentWorker, DurableAgentSession
+from azure.identity import DefaultAzureCredential as SyncDefaultAzureCredential
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from durabletask.azuremanaged.client import DurableTaskSchedulerClient
 from durabletask.azuremanaged.worker import DurableTaskSchedulerWorker
 from rich import print
 
+# Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "azure")
 
-DTS_ENDPOINT = os.getenv("DTS_ENDPOINT", "http://dts-emulator:8080")
-DTS_TASKHUB = os.getenv("DTS_TASKHUB", "default")
-
-# --- Chat client (same pattern as all other examples) ---
+async_credential = None
 if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
-    chat_client = OpenAIChatClient(
+    client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 else:
-    chat_client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"],
-        model=os.environ.get("OPENAI_MODEL", "gpt-4o"),
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
     )
 
-# --- Agent ---
+# DTS configuration
+DTS_ENDPOINT = os.getenv("DTS_ENDPOINT", "http://dts-emulator:8080")
+DTS_TASKHUB = os.getenv("DTS_TASKHUB", "default")
+
+PLAN_PROMPT = (
+    "My laptop won't connect to Wi-Fi. "
+    "I've already tried toggling the Wi-Fi switch and forgetting the network."
+)
+FOLLOWUP_PROMPT = (
+    "OK I restarted, and Wi-Fi is working now but it's very slow. "
+    "Pages take 10+ seconds to load. What should I try next?"
+)
+
 agent = Agent(
-    name="Joker",
-    instructions="You tell short, clever jokes. Keep responses under 3 sentences.",
-    client=chat_client,
+    name="ITSupport",
+    instructions=(
+        "You are a friendly IT support agent. "
+        "Reply in 1-2 short sentences — never bullet lists or numbered steps. "
+        "Suggest ONE thing to try at a time. If the fix requires leaving "
+        "(e.g. restart), tell the user to come back after."
+    ),
+    client=client,
 )
 
-# --- Worker (hosts the agent as a durable entity in DTS) ---
-dts_worker = DurableTaskSchedulerWorker(
-    host_address=DTS_ENDPOINT,
-    secure_channel=not DTS_ENDPOINT.startswith("http://"),
-    taskhub=DTS_TASKHUB,
-    token_credential=None,
-)
-agent_worker = DurableAIAgentWorker(dts_worker)
-agent_worker.add_agent(agent)
 
-# --- Client (sends requests to the agent via DTS) ---
-dts_client = DurableTaskSchedulerClient(
-    host_address=DTS_ENDPOINT,
-    secure_channel=not DTS_ENDPOINT.startswith("http://"),
-    taskhub=DTS_TASKHUB,
-    token_credential=None,
-)
-agent_client = DurableAIAgentClient(dts_client)
+def create_runtime() -> tuple[DurableTaskSchedulerWorker, DurableAIAgentClient]:
+    """Create a DTS worker/client pair for the demo."""
+    is_emulator = DTS_ENDPOINT.startswith("http://")
+    credential = None if is_emulator else SyncDefaultAzureCredential()
 
-# --- Interactive chat loop ---
-print("[bold]Durable Task agent (type 'exit' to quit)[/bold]\n")
+    dts_worker = DurableTaskSchedulerWorker(
+        host_address=DTS_ENDPOINT,
+        secure_channel=not is_emulator,
+        taskhub=DTS_TASKHUB,
+        token_credential=credential,
+    )
+    agent_worker = DurableAIAgentWorker(dts_worker)
+    agent_worker.add_agent(agent)
 
-with dts_worker:
-    dts_worker.start()
+    dts_client = DurableTaskSchedulerClient(
+        host_address=DTS_ENDPOINT,
+        secure_channel=not is_emulator,
+        taskhub=DTS_TASKHUB,
+        token_credential=credential,
+    )
 
-    joker = agent_client.get_agent("Joker")
-    session = joker.create_session()
-    print(f"[dim]Session: {session.session_id}[/dim]\n")
+    return dts_worker, DurableAIAgentClient(dts_client)
 
-    while True:
-        user_input = input("You: ").strip()
-        if not user_input or user_input.lower() == "exit":
-            break
-        response = joker.run(user_input, session=session)
-        print(f"\n[bold green]Joker:[/bold green] {response.text}\n")
+
+def run_demo() -> bool:
+    """Run a support-ticket demo that proves state survives a worker restart."""
+    print("[bold]Durable Task persistence demo — IT Support[/bold]\n")
+
+    worker, agent_client = create_runtime()
+    with worker:
+        print("[cyan]1.[/cyan] Starting the first worker and creating a durable session...")
+        worker.start()
+
+        support = agent_client.get_agent(agent.name)
+        session = support.create_session()
+        print(f"   [dim]Session: {session.session_id}[/dim]")
+        print(f"   [dim]Durable session: {session.durable_session_id}[/dim]")
+
+        print("\n[cyan]2.[/cyan] User reports a Wi-Fi issue...")
+        plan_response = support.run(PLAN_PROMPT, session=session)
+        print(f"   [green]Agent:[/green] {plan_response.text}")
+
+        saved_session = session.to_dict()
+
+    print("\n[cyan]3.[/cyan] [bold red]Worker stopped.[/bold red] (User goes away to restart their laptop...)")
+    print("   Restoring the same session after worker restart...")
+    restored_session = DurableAgentSession.from_dict(saved_session)
+
+    worker, agent_client = create_runtime()
+    with worker:
+        worker.start()
+        support = agent_client.get_agent(agent.name)
+
+        print("\n[cyan]4.[/cyan] User comes back after restarting — agent must remember the context...")
+        followup_response = support.run(FOLLOWUP_PROMPT, session=restored_session)
+        print(f"   [green]Agent:[/green] {followup_response.text}")
+
+    keywords = ["wi-fi", "wifi", "network", "dns", "connection", "slow"]
+    passed = any(kw in followup_response.text.lower() for kw in keywords)
+    if passed:
+        print("\n[bold green]PASS[/bold green] DTS preserved the support conversation across the worker restart.")
+    else:
+        print("\n[bold red]FAIL[/bold red] The agent did not recall the support context after the worker restart.")
+
+    return passed
+
+
+async def main() -> None:
+    """Run the DTS persistence demo."""
+    run_demo()
+
+    if async_credential:
+        await async_credential.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

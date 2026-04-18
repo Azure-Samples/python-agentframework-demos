@@ -19,3 +19,7 @@ Add-Content -Path .env -Value "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=$azureOpenAiEmb
 Add-Content -Path .env -Value "AZURE_OPENAI_EMBEDDING_MODEL=$azureOpenAiEmbeddingModel"
 $appInsightsConnectionString = azd env get-value APPLICATIONINSIGHTS_CONNECTION_STRING
 Add-Content -Path .env -Value "APPLICATIONINSIGHTS_CONNECTION_STRING=$appInsightsConnectionString"
+$dtsEndpoint = azd env get-value DTS_ENDPOINT
+$dtsTaskhub = azd env get-value DTS_TASKHUB
+Add-Content -Path .env -Value "DTS_ENDPOINT=$dtsEndpoint"
+Add-Content -Path .env -Value "DTS_TASKHUB=$dtsTaskhub"
