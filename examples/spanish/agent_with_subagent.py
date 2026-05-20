@@ -78,8 +78,17 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
+    )
 
 # ── Raíz del proyecto para herramientas de archivos ──────────────────
 PROJECT_DIR = os.path.join(os.path.dirname(__file__))
@@ -244,9 +253,13 @@ async def main() -> None:
 
     print("[bold]── Uso de tokens ──[/bold]")
     print(
-        f"[yellow]  Tokens del coordinador:[/yellow]  input={coord_input:,}  output={coord_output:,}  total={coord_total:,}"
+        f"[yellow]  Tokens del coordinador:[/yellow]  input={coord_input:,}  output={coord_output:,}  "
+        f"total={coord_total:,}"
     )
-    print(f"[yellow]  Tokens del subagente:[/yellow]  input={sub_input:,}  output={sub_output:,}  total={sub_total:,}")
+    print(
+        f"[yellow]  Tokens del subagente:[/yellow]  input={sub_input:,}  output={sub_output:,}  "
+        f"total={sub_total:,}"
+    )
     print()
     print("[dim]Los tokens de entrada del coordinador son mucho menores porque nunca vio[/dim]")
     print("[dim]contenido crudo — solo el resumen conciso del subagente.[/dim]")

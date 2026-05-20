@@ -26,6 +26,7 @@ This repository provides examples of [Microsoft Agent Framework](https://learn.m
 * [Configuring model providers](#configuring-model-providers)
   * [Using Microsoft Foundry models](#using-microsoft-foundry-models)
   * [Using OpenAI.com models](#using-openaicom-models)
+  * [Using local Ollama models](#using-local-ollama-models)
 * [Running the Python examples](#running-the-python-examples)
 * [Resources](#resources)
 
@@ -150,6 +151,30 @@ This project includes infrastructure as code (IaC) to provision Azure OpenAI dep
     OPENAI_API_KEY=your_openai_api_key
     OPENAI_MODEL=gpt-4o-mini
     ```
+
+## Using local Ollama models
+
+Most examples can also run against local Ollama models through Ollama's OpenAI-compatible endpoint.
+First install [Ollama](https://ollama.com/), start it, and pull chat and embedding models:
+
+```shell
+ollama pull qwen3.5:4b
+ollama pull nomic-embed-text
+```
+
+Then configure `.env`:
+
+```bash
+API_HOST=ollama
+OLLAMA_ENDPOINT=http://localhost:11434/v1
+OLLAMA_API_KEY=nokeyneeded
+OLLAMA_MODEL=qwen3.5:4b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+EMBEDDING_DIMENSIONS=256
+```
+
+Use `http://localhost:11434/v1` when Ollama and the Python process run on the same machine. If the examples run in a
+dev container while Ollama runs on the host, use `http://host.docker.internal:11434/v1` instead.                
 
 ## Running the Python examples
 

@@ -47,9 +47,16 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
 
@@ -91,8 +98,9 @@ triage_agent = Agent(
         "You are a customer-support triage agent. Briefly acknowledge the customer's issue "
         "and immediately hand off to the right specialist: order_agent for order inquiries, "
         "return_agent for returns. You cannot handle refunds directly. "
-        "Do NOT ask the customer for additional details — the specialist will handle it. "
-        "When the conversation is fully resolved (all agents have completed their tasks), say 'Goodbye!' to end the session."
+        "Do NOT ask the customer for additional details, the specialist will handle it. "
+        "When the conversation is fully resolved (all agents have completed their tasks), say 'Goodbye!' "
+        "to end the session."
     ),
 )
 

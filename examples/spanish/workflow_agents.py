@@ -33,8 +33,17 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
+    )
 
 # Crea los agentes de IA — se pasan directamente como ejecutores al WorkflowBuilder,
 # igual que las subclases de Executor en workflow_rag_ingest.py.
@@ -65,7 +74,10 @@ workflow = WorkflowBuilder(start_executor=writer).add_edge(writer, reviewer).bui
 
 
 async def main():
-    prompt = 'Escribe una publicación de LinkedIn de 2 frases: "Por qué tu piloto de IA se ve bien, pero falla en producción."'
+    prompt = (
+        'Escribe una publicación de LinkedIn de 2 frases: '
+        '"Por qué tu piloto de IA se ve bien, pero falla en producción."'
+    )
     print(f"Prompt: {prompt}\n")
     events = await workflow.run(prompt)
 

@@ -27,6 +27,7 @@ Este repositorio ofrece ejemplos de [Microsoft Agent Framework](https://learn.mi
 * [Configurar proveedores de modelos](#configurar-proveedores-de-modelos)
   * [Usar modelos de Microsoft Foundry](#usar-modelos-de-microsoft-foundry)
   * [Usar modelos de OpenAI.com](#usar-modelos-de-openaicom)
+  * [Usar modelos locales de Ollama](#usar-modelos-locales-de-ollama)
 * [Ejecutar los ejemplos en Python](#ejecutar-los-ejemplos-en-python)
 * [Recursos](#recursos)
 
@@ -145,6 +146,37 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
     OPENAI_API_KEY=tu_clave_api_de_openai
     OPENAI_MODEL=gpt-4o-mini
     ```
+
+## Usar modelos locales de Ollama
+
+La mayoría de los ejemplos también puede ejecutarse contra modelos locales de Ollama usando el endpoint compatible con
+OpenAI. Primero instala [Ollama](https://ollama.com/), inícialo y descarga modelos de chat y embeddings:
+
+```shell
+ollama pull qwen3.5:4b
+ollama pull nomic-embed-text
+```
+
+Luego configura `.env`:
+
+```bash
+API_HOST=ollama
+OLLAMA_ENDPOINT=http://localhost:11434/v1
+OLLAMA_API_KEY=nokeyneeded
+OLLAMA_MODEL=qwen3.5:4b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+EMBEDDING_DIMENSIONS=256
+```
+
+Usa `http://localhost:11434/v1` cuando Ollama y el proceso de Python se ejecuten en la misma máquina. Si los ejemplos
+corren en un dev container mientras Ollama corre en el host, usa `http://host.docker.internal:11434/v1`. En
+contenedores Linux, `host.docker.internal` puede requerir agregar un mapeo de host gateway a Docker.
+
+Se probaron flujos representativos de chat, streaming, tool calling, RAG con SQLite y embeddings locales con
+`qwen3.5:4b` y `nomic-embed-text`. Los ejemplos que usan Microsoft Foundry, Azure AI Search, Azure Application Insights
+o recursos de proyecto para red-team siguen requiriendo esos servicios de Azure. Los ejemplos de salida estructurada
+que usan `response_format` de Agent Framework pueden encontrar un error de serialización de framework o dependencias
+con Ollama local, aunque la salida estructurada directa con el SDK de OpenAI sí funciona.
 
 ## Ejecutar los ejemplos en Python
 

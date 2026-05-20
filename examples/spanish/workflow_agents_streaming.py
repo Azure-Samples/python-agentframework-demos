@@ -42,8 +42,17 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
+    )
 
 writer = Agent(
     client=client,
@@ -69,7 +78,10 @@ workflow = WorkflowBuilder(name="EscritorRevisor", start_executor=writer).add_ed
 
 
 async def main():
-    prompt = 'Escribe una publicación corta de LinkedIn: "4 trabajos que los agentes de IA están transformando silenciosamente este año."'
+    prompt = (
+        'Escribe una publicación corta de LinkedIn: '
+        '"4 trabajos que los agentes de IA están transformando silenciosamente este año."'
+    )
     print(f"💬 Solicitud: {prompt}\n")
 
     async for event in workflow.run(prompt, stream=True):

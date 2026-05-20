@@ -35,8 +35,17 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4"))
+    client = OpenAIChatClient(
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
+    )
 
 
 # --- Herramientas ---
@@ -87,7 +96,8 @@ return_agent = Agent(
     instructions=(
         "Eres el especialista en devoluciones. Ayuda al cliente a iniciar una devolución. "
         "Los únicos datos que necesitas son el número de pedido (3 dígitos) y si quieren un reembolso o reemplazo. "
-        "Mantenlo simple y rápido. Una vez que el cliente confirme, llama a process_return para completar la devolución. "
+        "Mantenlo simple y rápido. Una vez que el cliente confirme, llama a process_return para completar "
+        "la devolución. "
         "Después de procesar la devolución, transfiere de vuelta a triage_agent."
     ),
     tools=[process_return],

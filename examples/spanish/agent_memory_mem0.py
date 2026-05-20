@@ -34,9 +34,16 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
 
@@ -61,14 +68,15 @@ async def main() -> None:
     como contexto.
 
     Mem0 OSS necesita un LLM y un embedder para extraer memoria. Este ejemplo
-    usa Azure OpenAI cuando API_HOST=azure; si no, usa OPENAI_API_KEY.
+    usa Azure OpenAI cuando API_HOST=azure, Ollama cuando API_HOST=ollama;
+    si no, usa OPENAI_API_KEY.
     """
     print("\n[bold]=== Agente con memoria Mem0 OSS ===[/bold]")
 
     # Cada usuario tiene un ID único para aislar memorias por usuario
     user_id = str(uuid.uuid4())
 
-    # Configurar Mem0 OSS para usar Azure OpenAI u OpenAI como LLM y embedder
+    # Configurar Mem0 OSS para usar Azure OpenAI, Ollama u OpenAI como LLM y embedder
     if API_HOST == "azure":
         azure_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
         chat_deployment = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -96,6 +104,37 @@ async def main() -> None:
                         "azure_endpoint": azure_endpoint,
                         "api_version": "2024-12-01-preview",
                     },
+                },
+            },
+            "vector_store": {
+                "provider": "qdrant",
+                "config": {
+                    "embedding_model_dims": embedding_dims,
+                },
+            },
+        }
+    elif API_HOST == "ollama":
+        ollama_endpoint = os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1")
+        chat_model = os.environ.get("OLLAMA_MODEL", "qwen3.5:4b")
+        embedding_model = os.environ.get("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
+        embedding_dims = int(os.environ.get("EMBEDDING_DIMENSIONS", "256"))
+        api_key = os.environ.get("OLLAMA_API_KEY", "nokeyneeded")
+        mem0_config = {
+            "llm": {
+                "provider": "openai",
+                "config": {
+                    "model": chat_model,
+                    "api_key": api_key,
+                    "openai_base_url": ollama_endpoint,
+                },
+            },
+            "embedder": {
+                "provider": "openai",
+                "config": {
+                    "model": embedding_model,
+                    "api_key": api_key,
+                    "openai_base_url": ollama_endpoint,
+                    "embedding_dims": embedding_dims,
                 },
             },
             "vector_store": {

@@ -40,9 +40,16 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
 
@@ -197,7 +204,8 @@ TEST_CASES = [
         "query": (
             "Planifica un viaje de fin de semana de Los Ángeles (LAX) a Tokio, saliendo el viernes 20 de marzo "
             "y regresando el domingo 22 de marzo de 2026. Mi presupuesto es de $1500 en total. Me gusta el "
-            "senderismo. Busca vuelos, hoteles de menos de $100/noche, consulta el clima y sugiere actividades de senderismo."
+            "senderismo. Busca vuelos, hoteles de menos de $100/noche, consulta el clima y sugiere actividades "
+            "de senderismo."
         ),
         "ground_truth": (
             "Un itinerario completo de 2 días a Tokio desde Los Ángeles incluyendo: opciones de vuelos de ida y "

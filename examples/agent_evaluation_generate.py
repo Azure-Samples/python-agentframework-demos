@@ -40,9 +40,16 @@ if API_HOST == "azure":
         api_key=token_provider,
         model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
 
 
@@ -165,7 +172,11 @@ agent = Agent(
 # Test queries and their expected ground truth responses
 TEST_CASES = [
     {
-        "query": "Plan a 3-day trip from New York (JFK) to Tokyo, departing March 15 and returning March 18, 2026. My budget is $2000 total. I like hiking and museums. Please search for flights, hotels under $150/night, check the weather, and suggest activities.",
+        "query": (
+            "Plan a 3-day trip from New York (JFK) to Tokyo, departing March 15 and returning March 18, "
+            "2026. My budget is $2000 total. I like hiking and museums. Please search for flights, hotels "
+            "under $150/night, check the weather, and suggest activities."
+        ),
         "ground_truth": (
             "A complete 3-day Tokyo trip itinerary from New York including: round-trip flight options with prices, "
             "hotel recommendations within nightly budget, hiking activities (e.g. Mt. Takao), museum visits "
@@ -174,7 +185,11 @@ TEST_CASES = [
         ),
     },
     {
-        "query": "Plan a 5-day trip from San Francisco (SFO) to Tokyo, departing April 1 and returning April 6, 2026. My budget is $3000 total and I love museums. Please search for flights, hotels under $200/night, check the weather, and suggest museum activities.",
+        "query": (
+            "Plan a 5-day trip from San Francisco (SFO) to Tokyo, departing April 1 and returning April 6, "
+            "2026. My budget is $3000 total and I love museums. Please search for flights, hotels under "
+            "$200/night, check the weather, and suggest museum activities."
+        ),
         "ground_truth": (
             "A complete 5-day Tokyo trip itinerary from San Francisco including: round-trip flight options with "
             "prices, hotel recommendations within nightly budget, museum activity suggestions "
@@ -183,7 +198,11 @@ TEST_CASES = [
         ),
     },
     {
-        "query": "Plan a weekend trip from Los Angeles (LAX) to Tokyo, departing Friday March 20 and returning Sunday March 22, 2026. My budget is $1500 total. I enjoy hiking. Please search for flights, hotels under $100/night, check the weather, and suggest hiking activities.",
+        "query": (
+            "Plan a weekend trip from Los Angeles (LAX) to Tokyo, departing Friday March 20 and returning "
+            "Sunday March 22, 2026. My budget is $1500 total. I enjoy hiking. Please search for flights, "
+            "hotels under $100/night, check the weather, and suggest hiking activities."
+        ),
         "ground_truth": (
             "A complete 2-day Tokyo trip itinerary from Los Angeles including: round-trip flight options with "
             "prices, hotel recommendations within nightly budget, hiking activity suggestions "

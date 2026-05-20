@@ -44,9 +44,22 @@ if API_HOST == "azure":
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
         azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
+elif API_HOST == "ollama":
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+    )
+    eval_model_config = OpenAIModelConfiguration(
+        type="openai",
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+        model=os.environ.get("OLLAMA_MODEL", "qwen3.5:4b"),
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+    )
 else:
     client = OpenAIChatClient(
-        api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-5.4")
+        api_key=os.environ["OPENAI_API_KEY"],
+        model=os.environ.get("OPENAI_MODEL", "gpt-5.4"),
     )
     eval_model_config = OpenAIModelConfiguration(
         type="openai",
@@ -250,7 +263,11 @@ def display_evaluation_results(results: dict[str, dict]) -> None:
 
 
 async def main():
-    query = "Plan a 3-day trip from New York (JFK) to Tokyo, departing March 15 and returning March 18, 2026. My budget is $2000 total. I like hiking and museums. Please search for flights, hotels under $150/night, check the weather, and suggest activities."
+    query = (
+        "Plan a 3-day trip from New York (JFK) to Tokyo, departing March 15 and returning March 18, "
+        "2026. My budget is $2000 total. I like hiking and museums. Please search for flights, hotels "
+        "under $150/night, check the weather, and suggest activities."
+    )
 
     logger.info("Running travel planner agent...")
     response = await agent.run(query)

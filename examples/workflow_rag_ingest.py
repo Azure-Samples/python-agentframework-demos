@@ -35,7 +35,7 @@ logger.setLevel(logging.INFO)
 
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "azure")
-EMBEDDING_DIMENSIONS = 256  # Smaller dimension for efficiency
+EMBEDDING_DIMENSIONS = int(os.getenv("EMBEDDING_DIMENSIONS", "256"))  # Smaller dimension for efficiency
 
 # Configure the embedding client based on the API host
 if API_HOST == "azure":
@@ -46,9 +46,15 @@ if API_HOST == "azure":
         api_key=sync_token_provider(),
     )
     embed_model = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
+elif API_HOST == "ollama":
+    embed_client = OpenAI(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key=os.environ.get("OLLAMA_API_KEY", "nokeyneeded"),
+    )
+    embed_model = os.environ.get("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 else:
     embed_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    embed_model = "text-embedding-3-small"
+    embed_model = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
 
 @dataclass
