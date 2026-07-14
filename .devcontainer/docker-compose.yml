@@ -11,6 +11,7 @@ services:
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - REDIS_URL=redis://redis:6379
       - POSTGRES_URL=postgresql://admin:LocalPasswordOnly@db:5432/postgres
+      - DTS_ENDPOINT=http://dts-emulator:8080
 
   db:
     image: pgvector/pgvector:pg17
@@ -36,6 +37,13 @@ services:
       - "18888:18888"
     environment:
       - DASHBOARD__FRONTEND__AUTHMODE=Unsecured
+
+  dts-emulator:
+    image: mcr.microsoft.com/dts/dts-emulator:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8082:8082"
 
 volumes:
   postgres-data:
