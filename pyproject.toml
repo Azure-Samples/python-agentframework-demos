@@ -26,6 +26,7 @@ dependencies = [
     "agent-framework-mem0==1.0.0b260402",
     "agent-framework-azure-ai-search==1.0.0b260402",
     "agent-framework-orchestrations==1.0.0b260402",
+    "agent-framework-durabletask==1.0.0b260402",
 ]
 
 [tool.uv]

@@ -25,6 +25,9 @@
     },
     "azureOpenaiChatDeploymentCapacity": {
       "value": "${AZURE_OPENAI_CHAT_DEPLOYMENT_CAPACITY}"
+    },
+    "deployDts": {
+      "value": "${DEPLOY_DTS=false}"
     }
   }
 }
